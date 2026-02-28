@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(CLOUDFLARE_ACCOUNT_ID=a620d5a436cf10bb61cbbcbd1bc528e1 npx wrangler deployments list --name=iucse)",
+      "Bash(npx wrangler deploy)",
+      "Bash(npm run cf:build)",
+      "Bash(npx wrangler d1 execute cse-department --remote --command=\"CREATE TABLE IF NOT EXISTS sessions \\(id TEXT PRIMARY KEY DEFAULT \\(hex\\(randomblob\\(12\\)\\)\\), session TEXT NOT NULL UNIQUE, created_at TEXT DEFAULT \\(datetime\\(''now''\\)\\)\\)\")",
+      "Bash(npx wrangler whoami)",
+      "Bash(npx wrangler pages projects list)",
+      "Bash(npx wrangler deployments list)",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"CREATE TABLE IF NOT EXISTS curriculum \\(id TEXT PRIMARY KEY DEFAULT \\(hex\\(randomblob\\(12\\)\\)\\), course_code TEXT NOT NULL UNIQUE, course_title TEXT NOT NULL, credit REAL NOT NULL, year INTEGER NOT NULL, semester INTEGER NOT NULL, is_optional INTEGER DEFAULT 0\\);\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --file=seed-curriculum.sql)",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"SELECT COUNT\\(*\\) as total FROM curriculum;\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"SELECT DISTINCT course_code FROM attendance WHERE course_code LIKE ''%25%'';\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"SELECT DISTINCT course_code FROM attendance;\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE attendance SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE tutorials SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE tutorial_results SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE semester_results SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE class_schedules SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")"
     ]
   }
 }

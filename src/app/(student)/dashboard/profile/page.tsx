@@ -24,7 +24,7 @@ interface StudentProfile {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -47,8 +47,10 @@ export default function ProfilePage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleSave = async () => {
     if (!user?.id) return;

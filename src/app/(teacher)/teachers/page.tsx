@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Toast from '@/components/ui/Toast';
 
 export default function TeacherLoginPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [form, setForm] = useState({ session: '', courseCode: '', password: '' });
@@ -31,6 +33,7 @@ export default function TeacherLoginPage() {
       }
 
       setToast({ message: 'Login successful!', type: 'success' });
+      await refreshUser();
       setTimeout(() => router.push(`/${form.courseCode.toUpperCase()}`), 500);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });

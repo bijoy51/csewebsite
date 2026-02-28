@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Toast from '@/components/ui/Toast';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -31,6 +33,7 @@ export default function AdminLoginPage() {
       }
 
       setToast({ message: 'Login successful!', type: 'success' });
+      await refreshUser();
       setTimeout(() => router.push('/admin/dashboard'), 500);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });

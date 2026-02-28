@@ -1,6 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 
-name = "cse-website"
+name = "iucse-website"
+main = ".open-next/worker.js"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -8,3 +9,21 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
+
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cse-department"
+database_id = "655babe8-0cb1-4334-a6f1-ea9847e4abf3"
+
+[vars]
+JWT_SECRET = "a8f2d9e1b4c7a3f6e0d2b5c8a1f4e7d0b3c6a9f2e5d8c1b4a7f0e3d6c9b2a5"
+JWT_EXPIRES_IN = "24h"
+ADMIN_DEFAULT_PASSWORD = "admin123"
+NEXT_PUBLIC_APP_NAME = "Department of CSE - Islamic University"

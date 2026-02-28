@@ -22,9 +22,9 @@ interface Tutorial {
 }
 
 export default function TeacherTutorialPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
-  const courseCode = (params.courseCode as string) || '';
+  const courseCode = decodeURIComponent((params.courseCode as string) || '');
   const [students, setStudents] = useState<Student[]>([]);
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,8 +51,10 @@ export default function TeacherTutorialPage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user, courseCode]);
+  }, [user, authLoading, courseCode]);
 
   const initializeMarks = (studentList: Student[]) => {
     const defaultMarks: Record<string, { marks: number; attended: boolean }> = {};

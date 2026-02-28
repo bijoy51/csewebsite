@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import SemesterResult from '@/lib/models/SemesterResult';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 interface SemesterGroup {
   semester: number;
@@ -24,18 +24,14 @@ export async function GET(
   { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { studentId } = await params;
-    const userId = req.headers.get('x-user-id');
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (!userId || !role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Students can only access their own results
-    if (role === 'student' && userId !== studentId) {
+    if (auth.role === 'student' && auth.id !== studentId) {
       return NextResponse.json(
         { error: 'Forbidden: you can only view your own results' },
         { status: 403 }
@@ -45,20 +41,26 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const yearParam = searchParams.get('year');
 
-    const filter: Record<string, unknown> = { studentId };
-    if (yearParam) filter.year = parseInt(yearParam);
+    const db = await getDB();
 
-    const results = await SemesterResult.find(filter).sort({
-      year: 1,
-      semester: 1,
-    });
+    const { results } = await db
+      .prepare(
+        'SELECT course_code, grade, gpa, credits FROM semester_results WHERE student_id = ? ORDER BY course_code ASC'
+      )
+      .bind(studentId)
+      .all();
 
-    // Group by year
     const yearMap: Record<number, YearGroup> = {};
 
     for (const result of results) {
-      const y = result.year;
-      const s = result.semester;
+      // Derive year/semester from course code digits (e.g. CSE 2102 → year=2, semester=1)
+      const code = (result.course_code as string) || '';
+      const digits = code.replace(/[^0-9]/g, '');
+      const y = digits.length >= 2 ? (parseInt(digits[0]) || 1) : 1;
+      const s = digits.length >= 2 ? (parseInt(digits[1]) || 1) : 1;
+
+      // Filter by year if requested
+      if (yearParam && y !== parseInt(yearParam)) continue;
 
       if (!yearMap[y]) {
         yearMap[y] = { year: y, semesters: {} };
@@ -73,17 +75,16 @@ export async function GET(
         };
       }
 
-      yearMap[y].semesters[s].totalCredits += result.credits;
-      yearMap[y].semesters[s].weightedGpa += result.gpa * result.credits;
+      yearMap[y].semesters[s].totalCredits += result.credits as number;
+      yearMap[y].semesters[s].weightedGpa += (result.gpa as number) * (result.credits as number);
       yearMap[y].semesters[s].courses.push({
-        courseCode: result.courseCode,
-        grade: result.grade,
-        gpa: result.gpa,
-        credits: result.credits,
+        courseCode: result.course_code as string,
+        grade: result.grade as string,
+        gpa: result.gpa as number,
+        credits: result.credits as number,
       });
     }
 
-    // Compute yearly averages weighted by credits
     const yearlyResults = Object.values(yearMap).map((yearGroup) => {
       const semesterResults = Object.values(yearGroup.semesters).map((sem) => ({
         semester: sem.semester,
@@ -95,7 +96,6 @@ export async function GET(
         courses: sem.courses,
       }));
 
-      // Yearly average: weighted average of both semesters by credits
       let totalCredits = 0;
       let totalWeightedGpa = 0;
 

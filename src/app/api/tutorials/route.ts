@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Tutorial from '@/lib/models/Tutorial';
+import { getDB } from '@/lib/d1';
 import { createTutorialSchema } from '@/lib/validators';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
@@ -17,13 +15,23 @@ export async function GET(req: NextRequest) {
     const courseCode = searchParams.get('courseCode');
     const session = searchParams.get('session');
 
-    const filter: Record<string, string> = {};
-    if (courseCode) filter.courseCode = courseCode.toUpperCase();
-    if (session) filter.session = session;
+    const db = await getDB();
 
-    const tutorials = await Tutorial.find(filter).sort({ tutorialNumber: 1 });
+    const conditions: string[] = [];
+    const bindings: unknown[] = [];
+    if (courseCode) { conditions.push('course_code = ?'); bindings.push(courseCode.toUpperCase()); }
+    if (session) { conditions.push('session = ?'); bindings.push(session); }
 
-    return NextResponse.json({ success: true, tutorials });
+    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+
+    const { results } = await db
+      .prepare(
+        'SELECT id AS _id, course_code AS courseCode, session, tutorial_number AS tutorialNumber, topic, date, created_at AS createdAt, updated_at AS updatedAt FROM tutorials ' + where + ' ORDER BY tutorial_number ASC'
+      )
+      .bind(...bindings)
+      .all();
+
+    return NextResponse.json({ success: true, tutorials: results });
   } catch (error: unknown) {
     console.error('Get tutorials error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -32,11 +40,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (role !== 'teacher') {
+    if (auth?.role !== 'teacher') {
       return NextResponse.json(
         { error: 'Forbidden: teacher role required' },
         { status: 403 }
@@ -53,28 +59,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const tutorialData: Record<string, unknown> = {
-      courseCode: parsed.data.courseCode,
-      session: parsed.data.session,
-      tutorialNumber: parsed.data.tutorialNumber,
-      topic: parsed.data.topic,
-    };
+    const db = await getDB();
 
-    if (parsed.data.date) {
-      tutorialData.date = new Date(parsed.data.date);
+    try {
+      const tutorial = await db
+        .prepare(
+          'INSERT INTO tutorials (id, course_code, session, tutorial_number, topic, date) VALUES (hex(randomblob(12)), ?, ?, ?, ?, ?) RETURNING id AS _id, course_code AS courseCode, session, tutorial_number AS tutorialNumber, topic, date, created_at AS createdAt, updated_at AS updatedAt'
+        )
+        .bind(
+          parsed.data.courseCode.toUpperCase(),
+          parsed.data.session,
+          parsed.data.tutorialNumber,
+          parsed.data.topic,
+          parsed.data.date ?? null
+        )
+        .first();
+
+      return NextResponse.json({ success: true, tutorial }, { status: 201 });
+    } catch (e: unknown) {
+      if (String(e).includes('UNIQUE constraint failed')) {
+        return NextResponse.json(
+          { error: 'Tutorial with this number already exists for this course and session' },
+          { status: 409 }
+        );
+      }
+      throw e;
     }
-
-    const tutorial = await Tutorial.create(tutorialData);
-
-    return NextResponse.json({ success: true, tutorial }, { status: 201 });
   } catch (error: unknown) {
     console.error('Create tutorial error:', error);
-    if ((error as { code?: number }).code === 11000) {
-      return NextResponse.json(
-        { error: 'Tutorial with this number already exists for this course and session' },
-        { status: 409 }
-      );
-    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

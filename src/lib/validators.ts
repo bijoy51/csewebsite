@@ -2,8 +2,13 @@ import { z } from 'zod';
 
 export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  roll: z.string().min(1, 'Roll is required'),
-  registrationNo: z.string().min(1, 'Registration number is required'),
+  roll: z.string()
+    .regex(/^\d{7}$/, 'Roll must be exactly 7 digits')
+    .refine((val) => val.slice(2, 4) === '14', {
+      message: 'Invalid roll: digits 3-4 must be 14 (department code)',
+    }),
+  registrationNo: z.string()
+    .regex(/^\d{8,}$/, 'Registration number must be at least 8 digits'),
   session: z.string().min(1, 'Session is required'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -97,6 +102,7 @@ export const markSemesterResultsSchema = z.object({
 });
 
 export const updateProfileSchema = z.object({
+  profilePhoto: z.string().optional(),
   phone: z.string().optional(),
   bloodGroup: z.string().optional(),
   address: z.string().optional(),

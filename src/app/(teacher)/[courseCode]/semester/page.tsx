@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useParams } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import Select from '@/components/ui/Select';
 import Spinner from '@/components/ui/Spinner';
 import Toast from '@/components/ui/Toast';
 import { GRADES } from '@/lib/constants';
@@ -17,17 +16,26 @@ interface Student {
   roll: string;
 }
 
+// Extract year and semester from course code digits (e.g. CSE 2102 → year=2, semester=1)
+function parseYearSemester(code: string): { year: number; semester: number } {
+  const digits = code.replace(/[^0-9]/g, '');
+  if (digits.length >= 2) {
+    return { year: parseInt(digits[0]) || 1, semester: parseInt(digits[1]) || 1 };
+  }
+  return { year: 1, semester: 1 };
+}
+
 export default function TeacherSemesterPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
-  const courseCode = (params.courseCode as string) || '';
+  const courseCode = decodeURIComponent((params.courseCode as string) || '');
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  const [year, setYear] = useState('1');
-  const [semester, setSemester] = useState('1');
   const [results, setResults] = useState<Record<string, { grade: string; gpa: number }>>({});
+
+  const { year, semester } = parseYearSemester(courseCode);
 
   useEffect(() => {
     if (user?.session) {
@@ -44,8 +52,10 @@ export default function TeacherSemesterPage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const handleGradeChange = (studentId: string, grade: string) => {
     const gpa = gradeToGPA(grade);
@@ -69,8 +79,8 @@ export default function TeacherSemesterPage() {
         body: JSON.stringify({
           courseCode,
           session: user.session,
-          year: parseInt(year),
-          semester: parseInt(semester),
+          year,
+          semester,
           records,
         }),
       });
@@ -95,29 +105,13 @@ export default function TeacherSemesterPage() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <Card className="mb-6">
-        <div className="flex flex-wrap gap-4">
-          <Select
-            id="year"
-            label="Year"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            options={[
-              { value: '1', label: 'Year 1' },
-              { value: '2', label: 'Year 2' },
-              { value: '3', label: 'Year 3' },
-              { value: '4', label: 'Year 4' },
-            ]}
-          />
-          <Select
-            id="semester"
-            label="Semester"
-            value={semester}
-            onChange={(e) => setSemester(e.target.value)}
-            options={[
-              { value: '1', label: 'Semester 1' },
-              { value: '2', label: 'Semester 2' },
-            ]}
-          />
+        <div className="flex flex-wrap gap-4 text-sm">
+          <span className="px-3 py-1.5 bg-oxford-blue/10 text-oxford-blue rounded-lg font-medium">
+            Year {year}
+          </span>
+          <span className="px-3 py-1.5 bg-oxford-blue/10 text-oxford-blue rounded-lg font-medium">
+            Semester {semester}
+          </span>
         </div>
       </Card>
 

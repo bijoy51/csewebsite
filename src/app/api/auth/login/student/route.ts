@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Student from '@/lib/models/Student';
+import { getDB } from '@/lib/d1';
 import { comparePassword, signToken } from '@/lib/auth';
 import { studentLoginSchema } from '@/lib/validators';
 import { COOKIE_NAME } from '@/lib/constants';
@@ -17,12 +16,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await dbConnect();
-
+    const db = await getDB();
     const { email, password } = parsed.data;
-    const student = await Student.findOne({ email });
 
-    if (!student || !(await comparePassword(password, student.password))) {
+    const student = await db
+      .prepare('SELECT id, name, email, password, session FROM students WHERE email = ?')
+      .bind(email)
+      .first();
+
+    if (!student || !(await comparePassword(password, student.password as string))) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
@@ -30,15 +32,15 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signToken({
-      id: student._id.toString(),
+      id: student.id as string,
       role: 'student',
-      session: student.session,
+      session: student.session as string,
     });
 
     const response = NextResponse.json({
       success: true,
       user: {
-        id: student._id,
+        id: student.id,
         name: student.name,
         email: student.email,
         role: 'student',

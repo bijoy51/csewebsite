@@ -21,7 +21,7 @@ interface Course {
 }
 
 export default function CRDashboardPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,8 +55,10 @@ export default function CRDashboardPage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const toggleAttendance = (studentId: string) => {
     setRecords((prev) => ({

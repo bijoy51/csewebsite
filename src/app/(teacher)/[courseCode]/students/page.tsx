@@ -15,7 +15,7 @@ interface Student {
 }
 
 export default function StudentsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,8 +26,10 @@ export default function StudentsPage() {
         .then((data) => setStudents(data.students || []))
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) return <Spinner className="mt-20" />;
 

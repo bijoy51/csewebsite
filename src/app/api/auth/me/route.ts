@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
+import { getDB } from '@/lib/d1';
 import { verifyToken } from '@/lib/auth';
 import { COOKIE_NAME } from '@/lib/constants';
-import Student from '@/lib/models/Student';
-import Course from '@/lib/models/Course';
-import CR from '@/lib/models/CR';
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,35 +16,40 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    await dbConnect();
-
+    const db = await getDB();
     let user = null;
 
     switch (payload.role) {
       case 'student': {
-        const student = await Student.findById(payload.id).select('-password');
+        const student = await db
+          .prepare('SELECT id, name, email, session, roll, profile_photo FROM students WHERE id = ?')
+          .bind(payload.id)
+          .first();
         if (student) {
           user = {
-            id: student._id,
+            id: student.id,
             name: student.name,
             email: student.email,
             role: 'student',
             session: student.session,
             roll: student.roll,
-            profilePhoto: student.profilePhoto,
+            profilePhoto: student.profile_photo,
           };
         }
         break;
       }
       case 'teacher': {
-        const course = await Course.findById(payload.id).select('-password');
+        const course = await db
+          .prepare('SELECT id, course_code, course_title, teacher_name, session FROM courses WHERE id = ?')
+          .bind(payload.id)
+          .first();
         if (course) {
           user = {
-            id: course._id,
-            name: course.teacherName,
+            id: course.id,
+            name: course.teacher_name,
             role: 'teacher',
-            courseCode: course.courseCode,
-            courseTitle: course.courseTitle,
+            courseCode: course.course_code,
+            courseTitle: course.course_title,
             session: course.session,
           };
         }
@@ -62,10 +64,13 @@ export async function GET(req: NextRequest) {
         break;
       }
       case 'cr': {
-        const cr = await CR.findById(payload.id).select('-password');
+        const cr = await db
+          .prepare('SELECT id, name, session, roll FROM crs WHERE id = ?')
+          .bind(payload.id)
+          .first();
         if (cr) {
           user = {
-            id: cr._id,
+            id: cr.id,
             name: cr.name,
             role: 'cr',
             session: cr.session,

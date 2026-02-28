@@ -1,25 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import CR from '@/lib/models/CR';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ crId: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { crId } = await params;
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (role !== 'admin') {
+    if (auth?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
       );
     }
 
-    const cr = await CR.findById(crId).select('-password');
+    const db = await getDB();
+    const cr = await db
+      .prepare('SELECT id AS _id, session, name, roll, created_at AS createdAt, updated_at AS updatedAt FROM crs WHERE id = ?')
+      .bind(crId)
+      .first();
 
     if (!cr) {
       return NextResponse.json({ error: 'CR not found' }, { status: 404 });
@@ -37,21 +39,23 @@ export async function DELETE(
   { params }: { params: Promise<{ crId: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { crId } = await params;
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (role !== 'admin') {
+    if (auth?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
       );
     }
 
-    const cr = await CR.findByIdAndDelete(crId);
+    const db = await getDB();
+    const result = await db
+      .prepare('DELETE FROM crs WHERE id = ?')
+      .bind(crId)
+      .run();
 
-    if (!cr) {
+    if (!result.meta.changes) {
       return NextResponse.json({ error: 'CR not found' }, { status: 404 });
     }
 

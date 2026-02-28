@@ -16,7 +16,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   // Extract courseCode from URL (e.g., /CSE1101/attendance → CSE1101)
   const segments = pathname.split('/').filter(Boolean);
-  const courseCode = segments[0] || '';
+  const courseCode = decodeURIComponent(segments[0] || '');
 
   const sidebarItems: SidebarItem[] = [
     {

@@ -7,7 +7,7 @@ import Spinner from '@/components/ui/Spinner';
 import { gpaToGrade } from '@/lib/utils';
 
 export default function CGPAPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [cgpa, setCgpa] = useState<number | null>(null);
   const [totalCredits, setTotalCredits] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -22,8 +22,10 @@ export default function CGPAPage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) return <Spinner className="mt-10" />;
 

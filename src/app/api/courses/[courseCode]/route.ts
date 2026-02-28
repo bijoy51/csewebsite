@@ -1,30 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Course from '@/lib/models/Course';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ courseCode: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { courseCode } = await params;
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (!role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
     const session = searchParams.get('session');
 
-    const filter: Record<string, string> = { courseCode: courseCode.toUpperCase() };
-    if (session) {
-      filter.session = session;
-    }
+    const db = await getDB();
 
-    const course = await Course.findOne(filter).select('-password');
+    let course;
+    if (session) {
+      course = await db
+        .prepare(
+          'SELECT id AS _id, course_code AS courseCode, course_title AS courseTitle, teacher_name AS teacherName, session, year, semester, created_at AS createdAt, updated_at AS updatedAt FROM courses WHERE course_code = ? AND session = ?'
+        )
+        .bind(courseCode.toUpperCase(), session)
+        .first();
+    } else {
+      course = await db
+        .prepare(
+          'SELECT id AS _id, course_code AS courseCode, course_title AS courseTitle, teacher_name AS teacherName, session, year, semester, created_at AS createdAt, updated_at AS updatedAt FROM courses WHERE course_code = ?'
+        )
+        .bind(courseCode.toUpperCase())
+        .first();
+    }
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
@@ -42,12 +52,10 @@ export async function DELETE(
   { params }: { params: Promise<{ courseCode: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { courseCode } = await params;
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (role !== 'admin') {
+    if (auth?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
@@ -57,14 +65,22 @@ export async function DELETE(
     const { searchParams } = new URL(req.url);
     const session = searchParams.get('session');
 
-    const filter: Record<string, string> = { courseCode: courseCode.toUpperCase() };
+    const db = await getDB();
+
+    let result;
     if (session) {
-      filter.session = session;
+      result = await db
+        .prepare('DELETE FROM courses WHERE course_code = ? AND session = ?')
+        .bind(courseCode.toUpperCase(), session)
+        .run();
+    } else {
+      result = await db
+        .prepare('DELETE FROM courses WHERE course_code = ?')
+        .bind(courseCode.toUpperCase())
+        .run();
     }
 
-    const course = await Course.findOneAndDelete(filter);
-
-    if (!course) {
+    if (!result.meta.changes) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 

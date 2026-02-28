@@ -1,31 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import SemesterResult from '@/lib/models/SemesterResult';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { studentId } = await params;
-    const userId = req.headers.get('x-user-id');
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (!userId || !role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Students can only access their own CGPA
-    if (role === 'student' && userId !== studentId) {
+    if (auth.role === 'student' && auth.id !== studentId) {
       return NextResponse.json(
         { error: 'Forbidden: you can only view your own CGPA' },
         { status: 403 }
       );
     }
 
-    const results = await SemesterResult.find({ studentId });
+    const db = await getDB();
+
+    const { results } = await db
+      .prepare('SELECT gpa, credits FROM semester_results WHERE student_id = ?')
+      .bind(studentId)
+      .all();
 
     if (results.length === 0) {
       return NextResponse.json({
@@ -36,13 +37,12 @@ export async function GET(
       });
     }
 
-    // Credit-weighted average of all semester GPAs
     let totalCredits = 0;
     let totalWeightedGpa = 0;
 
     for (const result of results) {
-      totalCredits += result.credits;
-      totalWeightedGpa += result.gpa * result.credits;
+      totalCredits += result.credits as number;
+      totalWeightedGpa += (result.gpa as number) * (result.credits as number);
     }
 
     const cgpa =

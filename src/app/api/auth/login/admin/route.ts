@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Admin from '@/lib/models/Admin';
+import { getDB } from '@/lib/d1';
 import { comparePassword, signToken, hashPassword } from '@/lib/auth';
 import { adminLoginSchema } from '@/lib/validators';
 import { COOKIE_NAME } from '@/lib/constants';
@@ -17,19 +16,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await dbConnect();
-
+    const db = await getDB();
     const { password } = parsed.data;
 
     // Find admin or create default one
-    let admin = await Admin.findOne();
+    let admin = await db.prepare('SELECT id, password FROM admins LIMIT 1').first();
+
     if (!admin) {
       const defaultPassword = process.env.ADMIN_DEFAULT_PASSWORD || 'admin123';
       const hashed = await hashPassword(defaultPassword);
-      admin = await Admin.create({ password: hashed });
+      admin = await db
+        .prepare('INSERT INTO admins (id, password) VALUES (hex(randomblob(12)), ?) RETURNING id, password')
+        .bind(hashed)
+        .first();
     }
 
-    if (!(await comparePassword(password, admin.password))) {
+    if (!admin || !(await comparePassword(password, admin.password as string))) {
       return NextResponse.json(
         { error: 'Invalid password' },
         { status: 401 }
@@ -37,14 +39,14 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signToken({
-      id: admin._id.toString(),
+      id: admin.id as string,
       role: 'admin',
     });
 
     const response = NextResponse.json({
       success: true,
       user: {
-        id: admin._id,
+        id: admin.id,
         name: 'Admin',
         role: 'admin',
       },

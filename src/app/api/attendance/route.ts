@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Attendance from '@/lib/models/Attendance';
+import { getDB } from '@/lib/d1';
 import { markAttendanceSchema } from '@/lib/validators';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role || !['teacher', 'cr'].includes(role)) {
+    if (!auth || !['teacher', 'cr'].includes(auth.role)) {
       return NextResponse.json(
         { error: 'Forbidden: teacher or cr role required' },
         { status: 403 }
@@ -21,12 +19,30 @@ export async function GET(req: NextRequest) {
     const session = searchParams.get('session');
     const date = searchParams.get('date');
 
-    const filter: Record<string, unknown> = {};
-    if (courseCode) filter.courseCode = courseCode.toUpperCase();
-    if (session) filter.session = session;
-    if (date) filter.date = new Date(date);
+    const db = await getDB();
 
-    const records = await Attendance.find(filter).populate('studentId', '-password');
+    const conditions: string[] = [];
+    const bindings: unknown[] = [];
+
+    if (courseCode) { conditions.push('a.course_code = ?'); bindings.push(courseCode.toUpperCase()); }
+    if (session) { conditions.push('a.session = ?'); bindings.push(session); }
+    if (date) { conditions.push('a.date = ?'); bindings.push(date); }
+
+    const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+
+    const { results } = await db
+      .prepare(
+        'SELECT a.id AS _id, a.course_code AS courseCode, a.session, a.date, a.status, a.marked_by AS markedBy, ' +
+        "json_object('_id', s.id, 'name', s.name, 'roll', s.roll, 'registrationNo', s.registration_no, 'session', s.session, 'email', s.email) AS studentId " +
+        'FROM attendance a LEFT JOIN students s ON a.student_id = s.id ' + where
+      )
+      .bind(...bindings)
+      .all();
+
+    const records = results.map((r: Record<string, unknown>) => ({
+      ...r,
+      studentId: typeof r.studentId === 'string' ? JSON.parse(r.studentId as string) : r.studentId,
+    }));
 
     return NextResponse.json({ success: true, records });
   } catch (error: unknown) {
@@ -37,11 +53,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role || !['teacher', 'cr'].includes(role)) {
+    if (!auth || !['teacher', 'cr'].includes(auth.role)) {
       return NextResponse.json(
         { error: 'Forbidden: teacher or cr role required' },
         { status: 403 }
@@ -58,39 +72,51 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const db = await getDB();
     const { courseCode, session, date, records } = parsed.data;
-    const markedBy = role as 'teacher' | 'cr';
+    const markedBy = auth.role as 'teacher' | 'cr';
+    const code = courseCode.toUpperCase();
 
-    const bulkOps = records.map((record) => ({
-      updateOne: {
-        filter: {
-          studentId: record.studentId,
-          courseCode: courseCode.toUpperCase(),
-          date: new Date(date),
-        },
-        update: {
-          $set: {
-            studentId: record.studentId,
-            courseCode: courseCode.toUpperCase(),
-            session,
-            date: new Date(date),
-            status: record.status,
-            markedBy,
-          },
-        },
-        upsert: true,
-      },
-    }));
+    // Batch-fetch all existing records in one query
+    const studentIds = records.map((r) => r.studentId);
+    const placeholders = studentIds.map(() => '?').join(',');
+    const { results: existingRows } = await db
+      .prepare(`SELECT id, student_id FROM attendance WHERE course_code = ? AND date = ? AND student_id IN (${placeholders})`)
+      .bind(code, date, ...studentIds)
+      .all();
 
-    const result = await Attendance.bulkWrite(bulkOps);
+    const existingMap = new Map(existingRows.map((r: Record<string, unknown>) => [r.student_id as string, r.id as string]));
+
+    // Build batch of all upsert statements
+    const statements = [];
+    let upserted = 0;
+    let modified = 0;
+
+    for (const record of records) {
+      const existingId = existingMap.get(record.studentId);
+      if (existingId) {
+        statements.push(
+          db.prepare("UPDATE attendance SET status = ?, marked_by = ?, session = ?, updated_at = datetime('now') WHERE id = ?")
+            .bind(record.status, markedBy, session, existingId)
+        );
+        modified++;
+      } else {
+        statements.push(
+          db.prepare('INSERT INTO attendance (id, student_id, course_code, session, date, status, marked_by) VALUES (hex(randomblob(12)), ?, ?, ?, ?, ?, ?)')
+            .bind(record.studentId, code, session, date, record.status, markedBy)
+        );
+        upserted++;
+      }
+    }
+
+    if (statements.length > 0) {
+      await db.batch(statements);
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Attendance marked successfully',
-      result: {
-        upserted: result.upsertedCount,
-        modified: result.modifiedCount,
-      },
+      result: { upserted, modified },
     });
   } catch (error: unknown) {
     console.error('Mark attendance error:', error);

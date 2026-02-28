@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Student from '@/lib/models/Student';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role || !['teacher', 'admin', 'cr'].includes(role)) {
+    if (!auth || !['teacher', 'admin', 'cr'].includes(auth.role)) {
       return NextResponse.json(
         { error: 'Forbidden: teacher, admin, or cr role required' },
         { status: 403 }
@@ -25,11 +23,15 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const students = await Student.find({ session })
-      .select('-password')
-      .sort({ roll: 1 });
+    const db = await getDB();
+    const { results } = await db
+      .prepare(
+        'SELECT id AS _id, name, roll, registration_no AS registrationNo, session, email, profile_photo AS profilePhoto, phone, blood_group AS bloodGroup, address, created_at AS createdAt, updated_at AS updatedAt FROM students WHERE session = ? ORDER BY roll ASC'
+      )
+      .bind(session)
+      .all();
 
-    return NextResponse.json({ success: true, students });
+    return NextResponse.json({ success: true, students: results });
   } catch (error: unknown) {
     console.error('Get students error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

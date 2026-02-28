@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Attendance from '@/lib/models/Attendance';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { studentId } = await params;
-    const userId = req.headers.get('x-user-id');
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (!userId || !role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Students can only access their own attendance; teacher can access any
-    if (role === 'student' && userId !== studentId) {
+    if (auth.role === 'student' && auth.id !== studentId) {
       return NextResponse.json(
         { error: 'Forbidden: you can only view your own attendance' },
         { status: 403 }
@@ -28,21 +24,26 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const courseCode = searchParams.get('courseCode');
 
-    const filter: Record<string, unknown> = { studentId };
-    if (courseCode) filter.courseCode = courseCode.toUpperCase();
+    const db = await getDB();
 
-    const records = await Attendance.find(filter);
+    const conditions = ['student_id = ?'];
+    const bindings: unknown[] = [studentId];
+    if (courseCode) {
+      conditions.push('course_code = ?');
+      bindings.push(courseCode.toUpperCase());
+    }
 
-    // Group by courseCode and compute summary
-    const courseMap: Record<
-      string,
-      { courseCode: string; total: number; attended: number; missed: number }
-    > = {};
+    const { results } = await db
+      .prepare('SELECT a.course_code, a.status, c.course_title FROM attendance a LEFT JOIN courses c ON a.course_code = c.course_code AND a.session = c.session WHERE ' + conditions.map(c => c.replace('student_id', 'a.student_id').replace('course_code', 'a.course_code')).join(' AND '))
+      .bind(...bindings)
+      .all();
 
-    for (const record of records) {
-      const code = record.courseCode;
+    const courseMap: Record<string, { courseCode: string; courseTitle: string; total: number; attended: number; missed: number }> = {};
+
+    for (const record of results) {
+      const code = record.course_code as string;
       if (!courseMap[code]) {
-        courseMap[code] = { courseCode: code, total: 0, attended: 0, missed: 0 };
+        courseMap[code] = { courseCode: code, courseTitle: (record.course_title as string) || '', total: 0, attended: 0, missed: 0 };
       }
       courseMap[code].total += 1;
       if (record.status === 'present') {

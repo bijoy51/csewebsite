@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Course from '@/lib/models/Course';
+import { getDB } from '@/lib/d1';
 import { comparePassword, signToken } from '@/lib/auth';
 import { teacherLoginSchema } from '@/lib/validators';
 import { COOKIE_NAME } from '@/lib/constants';
@@ -17,15 +16,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await dbConnect();
-
+    const db = await getDB();
     const { session, courseCode, password } = parsed.data;
-    const course = await Course.findOne({
-      courseCode: courseCode.toUpperCase(),
-      session,
-    });
 
-    if (!course || !(await comparePassword(password, course.password))) {
+    const course = await db
+      .prepare('SELECT id, course_code, course_title, teacher_name, session, password FROM courses WHERE course_code = ? AND session = ?')
+      .bind(courseCode.toUpperCase(), session)
+      .first();
+
+    if (!course || !(await comparePassword(password, course.password as string))) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -33,20 +32,20 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signToken({
-      id: course._id.toString(),
+      id: course.id as string,
       role: 'teacher',
-      session: course.session,
-      courseCode: course.courseCode,
+      session: course.session as string,
+      courseCode: course.course_code as string,
     });
 
     const response = NextResponse.json({
       success: true,
       user: {
-        id: course._id,
-        name: course.teacherName,
+        id: course.id,
+        name: course.teacher_name,
         role: 'teacher',
-        courseCode: course.courseCode,
-        courseTitle: course.courseTitle,
+        courseCode: course.course_code,
+        courseTitle: course.course_title,
         session: course.session,
       },
     });

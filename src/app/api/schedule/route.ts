@@ -1,27 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import ClassSchedule from '@/lib/models/ClassSchedule';
+import { getDB } from '@/lib/d1';
 import { createScheduleSchema } from '@/lib/validators';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
     const session = searchParams.get('session');
 
-    const filter: Record<string, string> = {};
-    if (session) filter.session = session;
+    const db = await getDB();
 
-    const schedules = await ClassSchedule.find(filter).sort({ date: -1 });
+    let results;
+    if (session) {
+      ({ results } = await db
+        .prepare(
+          'SELECT id AS _id, course_code AS courseCode, session, date, time, room, created_at AS createdAt, updated_at AS updatedAt FROM class_schedules WHERE session = ? ORDER BY date DESC'
+        )
+        .bind(session)
+        .all());
+    } else {
+      ({ results } = await db
+        .prepare(
+          'SELECT id AS _id, course_code AS courseCode, session, date, time, room, created_at AS createdAt, updated_at AS updatedAt FROM class_schedules ORDER BY date DESC'
+        )
+        .all());
+    }
 
-    return NextResponse.json({ success: true, schedules });
+    return NextResponse.json({ success: true, schedules: results });
   } catch (error: unknown) {
     console.error('Get schedule error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -30,11 +41,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role || !['teacher', 'admin'].includes(role)) {
+    if (!auth || !['teacher', 'admin'].includes(auth.role)) {
       return NextResponse.json(
         { error: 'Forbidden: teacher or admin role required' },
         { status: 403 }
@@ -51,13 +60,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const schedule = await ClassSchedule.create({
-      courseCode: parsed.data.courseCode,
-      session: parsed.data.session,
-      date: new Date(parsed.data.date),
-      time: parsed.data.time,
-      room: parsed.data.room ?? '',
-    });
+    const db = await getDB();
+
+    const schedule = await db
+      .prepare(
+        'INSERT INTO class_schedules (id, course_code, session, date, time, room) VALUES (hex(randomblob(12)), ?, ?, ?, ?, ?) RETURNING id AS _id, course_code AS courseCode, session, date, time, room, created_at AS createdAt, updated_at AS updatedAt'
+      )
+      .bind(
+        parsed.data.courseCode.toUpperCase(),
+        parsed.data.session,
+        parsed.data.date,
+        parsed.data.time,
+        parsed.data.room ?? ''
+      )
+      .first();
 
     return NextResponse.json({ success: true, schedule }, { status: 201 });
   } catch (error: unknown) {

@@ -16,7 +16,7 @@ interface SemesterResult {
 }
 
 export default function SemesterResultPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [results, setResults] = useState<SemesterResult[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,8 +27,10 @@ export default function SemesterResultPage() {
         .then((data) => setResults(data.results || []))
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) return <Spinner className="mt-10" />;
 
@@ -63,7 +65,7 @@ export default function SemesterResultPage() {
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-oxford-blue">{key}</h3>
                 <span className="text-sm font-medium bg-oxford-blue/10 text-oxford-blue px-3 py-1 rounded-full">
-                  GPA: {weightedGPA.toFixed(2)}
+                  CGPA: {weightedGPA.toFixed(2)}
                 </span>
               </div>
               <div className="overflow-x-auto">

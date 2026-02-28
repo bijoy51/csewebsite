@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Card from '@/components/ui/Card';
 import Spinner from '@/components/ui/Spinner';
@@ -20,25 +20,39 @@ interface CourseInfo {
 }
 
 export default function TutorialPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [tutorials, setTutorials] = useState<Tutorial[]>([]);
   const [courses, setCourses] = useState<CourseInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.session) {
-      Promise.all([
+  const fetchTutorials = useCallback(async () => {
+    if (!user?.session) return;
+    try {
+      const [coursesData, tutorialsData] = await Promise.all([
         fetch(`/api/courses?session=${user.session}`).then((r) => r.json()),
         fetch(`/api/tutorials?session=${user.session}`).then((r) => r.json()),
-      ])
-        .then(([coursesData, tutorialsData]) => {
-          setCourses(coursesData.courses || []);
-          setTutorials(tutorialsData.tutorials || []);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      ]);
+      setCourses(coursesData.courses || []);
+      setTutorials(tutorialsData.tutorials || []);
+    } catch (err) {
+      console.error(err);
     }
-  }, [user]);
+  }, [user?.session]);
+
+  useEffect(() => {
+    if (user?.session) {
+      fetchTutorials().finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
+    }
+  }, [user, authLoading, fetchTutorials]);
+
+  // Auto-refresh every 30 seconds so students see new tutorials without reload
+  useEffect(() => {
+    if (!user?.session) return;
+    const interval = setInterval(fetchTutorials, 30000);
+    return () => clearInterval(interval);
+  }, [user?.session, fetchTutorials]);
 
   if (loading) return <Spinner className="mt-20" />;
 

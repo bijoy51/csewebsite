@@ -110,19 +110,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/admin/dashboard/:path*',
-    '/admin/courses/:path*',
-    '/admin/cr/:path*',
-    '/cr/dashboard/:path*',
-    '/api/students/:path*',
-    '/api/courses/:path*',
-    '/api/attendance/:path*',
-    '/api/tutorials/:path*',
-    '/api/results/:path*',
-    '/api/schedule/:path*',
-    '/api/admin/:path*',
-    '/api/cr/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico|images|uploads).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images|uploads).*)',
   ],
 };

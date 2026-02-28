@@ -15,7 +15,7 @@ interface TutorialResult {
 }
 
 export default function TutorialResultPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [results, setResults] = useState<TutorialResult[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,8 +26,10 @@ export default function TutorialResultPage() {
         .then((data) => setResults(data.results || []))
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) return <Spinner className="mt-10" />;
 

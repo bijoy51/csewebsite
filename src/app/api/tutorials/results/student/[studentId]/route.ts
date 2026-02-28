@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import TutorialResult from '@/lib/models/TutorialResult';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ studentId: string }> }
 ) {
   try {
-    await dbConnect();
-
     const { studentId } = await params;
-    const userId = req.headers.get('x-user-id');
-    const role = req.headers.get('x-user-role');
+    const auth = getAuthUser(req);
 
-    if (!userId || !role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Students can only access their own tutorial results
-    if (role === 'student' && userId !== studentId) {
+    if (auth.role === 'student' && auth.id !== studentId) {
       return NextResponse.json(
         { error: 'Forbidden: you can only view your own tutorial results' },
         { status: 403 }
@@ -28,15 +24,25 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const courseCode = searchParams.get('courseCode');
 
-    const filter: Record<string, unknown> = { studentId };
-    if (courseCode) filter.courseCode = courseCode.toUpperCase();
+    const db = await getDB();
 
-    const results = await TutorialResult.find(filter).sort({
-      courseCode: 1,
-      tutorialNumber: 1,
-    });
+    const conditions = ['student_id = ?'];
+    const bindings: unknown[] = [studentId];
+    if (courseCode) {
+      conditions.push('course_code = ?');
+      bindings.push(courseCode.toUpperCase());
+    }
 
-    return NextResponse.json({ success: true, results });
+    const { results } = await db
+      .prepare(
+        'SELECT id AS _id, student_id AS studentId, course_code AS courseCode, session, tutorial_number AS tutorialNumber, marks, total_marks AS totalMarks, attended, created_at AS createdAt, updated_at AS updatedAt FROM tutorial_results WHERE ' + conditions.join(' AND ') + ' ORDER BY course_code ASC, tutorial_number ASC'
+      )
+      .bind(...bindings)
+      .all();
+
+    const mapped = results.map((r: Record<string, unknown>) => ({ ...r, attended: Boolean(r.attended) }));
+
+    return NextResponse.json({ success: true, results: mapped });
   } catch (error: unknown) {
     console.error('Get student tutorial results error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

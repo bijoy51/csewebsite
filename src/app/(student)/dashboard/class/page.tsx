@@ -16,7 +16,7 @@ interface ScheduleEntry {
 }
 
 export default function ClassSchedulePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [schedule, setSchedule] = useState<ScheduleEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,8 +27,10 @@ export default function ClassSchedulePage() {
         .then((data) => setSchedule(data.schedules || []))
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) return <Spinner className="mt-20" />;
 

@@ -1,30 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Course from '@/lib/models/Course';
+import { getDB } from '@/lib/d1';
 import { addCourseSchema } from '@/lib/validators';
-import { hashPassword } from '@/lib/auth';
+import { hashPassword, getAuthUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (!role) {
+    if (!auth) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
     const session = searchParams.get('session');
 
-    const filter: Record<string, string> = {};
+    const db = await getDB();
+
+    let results;
     if (session) {
-      filter.session = session;
+      ({ results } = await db
+        .prepare(
+          'SELECT id AS _id, course_code AS courseCode, course_title AS courseTitle, teacher_name AS teacherName, session, year, semester, created_at AS createdAt, updated_at AS updatedAt FROM courses WHERE session = ?'
+        )
+        .bind(session)
+        .all());
+    } else {
+      ({ results } = await db
+        .prepare(
+          'SELECT id AS _id, course_code AS courseCode, course_title AS courseTitle, teacher_name AS teacherName, session, year, semester, created_at AS createdAt, updated_at AS updatedAt FROM courses'
+        )
+        .all());
     }
 
-    const courses = await Course.find(filter).select('-password');
-
-    return NextResponse.json({ success: true, courses });
+    return NextResponse.json({ success: true, courses: results });
   } catch (error: unknown) {
     console.error('Get courses error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -33,11 +41,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (role !== 'admin') {
+    if (auth?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
@@ -54,25 +60,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const db = await getDB();
     const hashedPassword = await hashPassword(parsed.data.password);
 
-    const course = await Course.create({
-      ...parsed.data,
-      password: hashedPassword,
-    });
+    try {
+      const course = await db
+        .prepare(
+          'INSERT INTO courses (id, course_code, course_title, teacher_name, session, password, year, semester) VALUES (hex(randomblob(12)), ?, ?, ?, ?, ?, ?, ?) RETURNING id AS _id, course_code AS courseCode, course_title AS courseTitle, teacher_name AS teacherName, session, year, semester, created_at AS createdAt, updated_at AS updatedAt'
+        )
+        .bind(
+          parsed.data.courseCode.toUpperCase(),
+          parsed.data.courseTitle,
+          parsed.data.teacherName,
+          parsed.data.session,
+          hashedPassword,
+          parsed.data.year ?? null,
+          parsed.data.semester ?? null
+        )
+        .first();
 
-    const courseObj = course.toObject();
-    delete courseObj.password;
-
-    return NextResponse.json({ success: true, course: courseObj }, { status: 201 });
+      return NextResponse.json({ success: true, course }, { status: 201 });
+    } catch (e: unknown) {
+      if (String(e).includes('UNIQUE constraint failed')) {
+        return NextResponse.json(
+          { error: 'Course with this code and session already exists' },
+          { status: 409 }
+        );
+      }
+      throw e;
+    }
   } catch (error: unknown) {
     console.error('Create course error:', error);
-    if ((error as { code?: number }).code === 11000) {
-      return NextResponse.json(
-        { error: 'Course with this code and session already exists' },
-        { status: 409 }
-      );
-    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

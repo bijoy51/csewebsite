@@ -10,8 +10,8 @@ const quickLinks = [
 ];
 
 const resourceLinks = [
-  { label: 'Student Portal', href: '/login/student' },
-  { label: 'Teacher Portal', href: '/login/teacher' },
+  { label: 'Student Portal', href: '/login?tab=student' },
+  { label: 'Teacher Portal', href: '/login?tab=teacher' },
   { label: 'Academic Calendar', href: '#' },
   { label: 'Library', href: '#' },
   { label: 'Notices & Circulars', href: '#news' },

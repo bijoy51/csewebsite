@@ -1,15 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import Toast from '@/components/ui/Toast';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [sessions, setSessions] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [form, setForm] = useState({
     name: '',
@@ -20,6 +24,13 @@ export default function RegisterPage() {
     password: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch('/api/sessions')
+      .then((res) => res.json())
+      .then((data) => setSessions(data.sessions || []))
+      .catch(console.error);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -54,6 +65,7 @@ export default function RegisterPage() {
       }
 
       setToast({ message: 'Registration successful!', type: 'success' });
+      await refreshUser();
       setTimeout(() => router.push('/dashboard'), 1000);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });
@@ -92,7 +104,7 @@ export default function RegisterPage() {
                 id="roll"
                 name="roll"
                 label="Roll Number"
-                placeholder="e.g., 2201"
+                placeholder="e.g., 2314013"
                 value={form.roll}
                 onChange={handleChange}
                 error={errors.roll}
@@ -102,20 +114,24 @@ export default function RegisterPage() {
                 id="registrationNo"
                 name="registrationNo"
                 label="Registration No"
-                placeholder="e.g., 2022331001"
+                placeholder="e.g., 23001083"
                 value={form.registrationNo}
                 onChange={handleChange}
                 error={errors.registrationNo}
                 required
               />
             </div>
-            <Input
+            <Select
               id="session"
               name="session"
               label="Session"
-              placeholder="e.g., 2022-23"
+              placeholder="Select your session"
+              options={sessions.map((s) => ({ value: s, label: s }))}
               value={form.session}
-              onChange={handleChange}
+              onChange={(e) => {
+                setForm({ ...form, session: e.target.value });
+                setErrors({ ...errors, session: '' });
+              }}
               error={errors.session}
               required
             />

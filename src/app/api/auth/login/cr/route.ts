@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import CR from '@/lib/models/CR';
+import { getDB } from '@/lib/d1';
 import { comparePassword, signToken } from '@/lib/auth';
 import { crLoginSchema } from '@/lib/validators';
 import { COOKIE_NAME } from '@/lib/constants';
@@ -17,12 +16,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await dbConnect();
-
+    const db = await getDB();
     const { session, roll, password } = parsed.data;
-    const cr = await CR.findOne({ session, roll });
 
-    if (!cr || !(await comparePassword(password, cr.password))) {
+    const cr = await db
+      .prepare('SELECT id, name, session, roll, password FROM crs WHERE session = ? AND roll = ?')
+      .bind(session, roll)
+      .first();
+
+    if (!cr || !(await comparePassword(password, cr.password as string))) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
@@ -30,16 +32,16 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signToken({
-      id: cr._id.toString(),
+      id: cr.id as string,
       role: 'cr',
-      session: cr.session,
-      roll: cr.roll,
+      session: cr.session as string,
+      roll: cr.roll as string,
     });
 
     const response = NextResponse.json({
       success: true,
       user: {
-        id: cr._id,
+        id: cr.id,
         name: cr.name,
         role: 'cr',
         session: cr.session,

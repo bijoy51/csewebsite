@@ -13,10 +13,10 @@ const navLinks = [
 ];
 
 const loginOptions = [
-  { label: 'Student Login', href: '/login/student' },
-  { label: 'Teacher Login', href: '/login/teacher' },
-  { label: 'Admin Login', href: '/login/admin' },
-  { label: 'CR Login', href: '/login/cr' },
+  { label: 'Student Login', href: '/login?tab=student' },
+  { label: 'Teacher Login', href: '/login?tab=teacher' },
+  { label: 'Admin Login', href: '/login?tab=admin' },
+  { label: 'CR Login', href: '/login?tab=cr' },
 ];
 
 export default function Navbar() {

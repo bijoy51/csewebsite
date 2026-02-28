@@ -1,60 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/db';
-import Student from '@/lib/models/Student';
-import Course from '@/lib/models/Course';
-import CR from '@/lib/models/CR';
+import { getDB } from '@/lib/d1';
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(req: NextRequest) {
   try {
-    await dbConnect();
+    const auth = getAuthUser(req);
 
-    const role = req.headers.get('x-user-role');
-
-    if (role !== 'admin') {
+    if (auth?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
       );
     }
 
-    // Get distinct sessions from courses
-    const sessions: string[] = await Course.distinct('session');
+    const db = await getDB();
 
-    // Build summary per session
-    const sessionSummaries = await Promise.all(
-      sessions.map(async (session) => {
-        const [studentCount, courseCount, crCount] = await Promise.all([
-          Student.countDocuments({ session }),
-          Course.countDocuments({ session }),
-          CR.countDocuments({ session }),
-        ]);
-
-        return {
-          session,
-          students: studentCount,
-          courses: courseCount,
-          crs: crCount,
-        };
-      })
-    );
-
-    // Overall counts
-    const [totalStudents, totalCourses, totalCRs] = await Promise.all([
-      Student.countDocuments(),
-      Course.countDocuments(),
-      CR.countDocuments(),
+    // 4 queries total instead of 3N+4
+    const [sessionRows, studentCounts, courseCounts, crCounts] = await db.batch([
+      db.prepare('SELECT DISTINCT session FROM courses ORDER BY session'),
+      db.prepare('SELECT session, COUNT(*) AS count FROM students GROUP BY session'),
+      db.prepare('SELECT session, COUNT(*) AS count FROM courses GROUP BY session'),
+      db.prepare('SELECT session, COUNT(*) AS count FROM crs GROUP BY session'),
     ]);
+
+    const sessions = sessionRows.results.map((r: Record<string, unknown>) => r.session as string);
+
+    // Build lookup maps from GROUP BY results
+    const studentMap = new Map<string, number>(studentCounts.results.map((r: Record<string, unknown>) => [r.session as string, Number(r.count)]));
+    const courseMap = new Map<string, number>(courseCounts.results.map((r: Record<string, unknown>) => [r.session as string, Number(r.count)]));
+    const crMap = new Map<string, number>(crCounts.results.map((r: Record<string, unknown>) => [r.session as string, Number(r.count)]));
+
+    let totalStudents = 0, totalCourses = 0, totalCRs = 0;
+
+    const sessionSummaries = sessions.map((session: string) => {
+      const sc = studentMap.get(session) ?? 0;
+      const cc = courseMap.get(session) ?? 0;
+      const crc = crMap.get(session) ?? 0;
+      totalStudents += sc;
+      totalCourses += cc;
+      totalCRs += crc;
+      return { session, studentCount: sc, courseCount: cc, crCount: crc };
+    });
 
     return NextResponse.json({
       success: true,
-      summary: {
-        total: {
-          students: totalStudents,
-          courses: totalCourses,
-          crs: totalCRs,
-        },
-        sessions: sessionSummaries,
-      },
+      totalStudents,
+      totalCourses,
+      totalCRs,
+      sessions: sessionSummaries,
     });
   } catch (error: unknown) {
     console.error('Admin summary error:', error);

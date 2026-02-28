@@ -16,7 +16,7 @@ interface AttendanceSummary {
 }
 
 export default function AttendancePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [attendance, setAttendance] = useState<AttendanceSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,8 +27,10 @@ export default function AttendancePage() {
         .then((data) => setAttendance(data.summary || []))
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   if (loading) return <Spinner className="mt-20" />;
 

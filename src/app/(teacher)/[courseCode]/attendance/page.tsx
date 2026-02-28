@@ -20,9 +20,9 @@ interface AttendanceRecord {
 }
 
 export default function TeacherAttendancePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
-  const courseCode = (params.courseCode as string) || '';
+  const courseCode = decodeURIComponent((params.courseCode as string) || '');
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -46,8 +46,10 @@ export default function TeacherAttendancePage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const toggleAttendance = (studentId: string) => {
     setRecords((prev) => ({
