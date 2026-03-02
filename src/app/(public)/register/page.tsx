@@ -65,7 +65,7 @@ export default function RegisterPage() {
       }
 
       setToast({ message: 'Registration successful!', type: 'success' });
-      await refreshUser();
+      await refreshUser('student');
       setTimeout(() => router.push('/dashboard'), 1000);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });

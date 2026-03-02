@@ -169,7 +169,7 @@ function LoginForm() {
       }
 
       setToast({ message: 'Login successful!', type: 'success' });
-      await refreshUser();
+      await refreshUser(activeTab);
       setTimeout(() => router.push(redirectTo), 500);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });

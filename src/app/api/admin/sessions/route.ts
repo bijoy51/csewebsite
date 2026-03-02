@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/d1';
-import { getAuthUser } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
+import { COOKIE_NAMES } from '@/lib/constants';
+
+function getAdmin(req: NextRequest) {
+  const token = req.cookies.get(COOKIE_NAMES.admin)?.value;
+  return token ? verifyToken(token) : null;
+}
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = getAuthUser(req);
+    const auth = getAdmin(req);
 
-    if (auth?.role !== 'admin') {
+    if (!auth || auth.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
@@ -29,9 +35,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = getAuthUser(req);
+    const auth = getAdmin(req);
 
-    if (auth?.role !== 'admin') {
+    if (!auth || auth.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }
@@ -76,9 +82,9 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
-    const auth = getAuthUser(req);
+    const auth = getAdmin(req);
 
-    if (auth?.role !== 'admin') {
+    if (!auth || auth.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }

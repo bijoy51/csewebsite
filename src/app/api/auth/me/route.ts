@@ -1,11 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/d1';
 import { verifyToken } from '@/lib/auth';
-import { COOKIE_NAME } from '@/lib/constants';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.cookies.get(COOKIE_NAME)?.value;
+    const { searchParams } = new URL(req.url);
+    const role = searchParams.get('role');
+
+    let token: string | undefined;
+
+    if (role && COOKIE_NAMES[role]) {
+      // Check the specific role cookie
+      token = req.cookies.get(COOKIE_NAMES[role])?.value;
+    } else {
+      // Fallback: try all role cookies
+      for (const name of Object.values(COOKIE_NAMES)) {
+        const t = req.cookies.get(name)?.value;
+        if (t) { token = t; break; }
+      }
+    }
 
     if (!token) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });

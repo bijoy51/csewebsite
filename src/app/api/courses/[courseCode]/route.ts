@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/d1';
-import { getAuthUser } from '@/lib/auth';
+import { getAuthUser, verifyToken } from '@/lib/auth';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 export async function GET(
   req: NextRequest,
@@ -53,9 +54,10 @@ export async function DELETE(
 ) {
   try {
     const { courseCode } = await params;
-    const auth = getAuthUser(req);
+    const adminToken = req.cookies.get(COOKIE_NAMES.admin)?.value;
+    const auth = adminToken ? verifyToken(adminToken) : null;
 
-    if (auth?.role !== 'admin') {
+    if (!auth || auth.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }

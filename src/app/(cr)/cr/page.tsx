@@ -33,7 +33,7 @@ export default function CRLoginPage() {
       }
 
       setToast({ message: 'Login successful!', type: 'success' });
-      await refreshUser();
+      await refreshUser('cr');
       setTimeout(() => router.push('/cr/dashboard'), 500);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });

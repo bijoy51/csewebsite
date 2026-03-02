@@ -22,9 +22,17 @@ export default function Topbar({ title }: TopbarProps) {
               <p className="text-sm font-medium text-gray-900">{user.name}</p>
               <p className="text-xs text-gray-500 capitalize">{user.role}</p>
             </div>
-            <div className="w-8 h-8 rounded-full bg-oxford-blue text-white flex items-center justify-center text-sm font-medium">
-              {user.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
+            {user.profilePhoto && user.profilePhoto.startsWith('data:') ? (
+              <img
+                src={user.profilePhoto}
+                alt={user.name}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-oxford-blue text-white flex items-center justify-center text-sm font-medium">
+                {user.name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
           </div>
         )}
         <Button variant="ghost" size="sm" onClick={logout}>

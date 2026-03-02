@@ -132,11 +132,21 @@ CREATE TABLE IF NOT EXISTS class_schedules (
   date TEXT NOT NULL,
   time TEXT NOT NULL,
   room TEXT DEFAULT '',
+  teacher_name TEXT DEFAULT '',
+  topic TEXT DEFAULT '',
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_schedules_session_date ON class_schedules(session, date);
 CREATE INDEX IF NOT EXISTS idx_schedules_course_session ON class_schedules(course_code, session);
+
+-- Teachers table
+CREATE TABLE IF NOT EXISTS teachers (
+  id TEXT PRIMARY KEY DEFAULT (hex(randomblob(12))),
+  name TEXT NOT NULL,
+  designation TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
 
 -- Curriculum table (predefined course catalog)
 CREATE TABLE IF NOT EXISTS curriculum (

@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/d1';
-import { getAuthUser } from '@/lib/auth';
+import { verifyToken } from '@/lib/auth';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = getAuthUser(req);
+    // Directly check admin cookie to avoid any path-detection issues
+    const token = req.cookies.get(COOKIE_NAMES.admin)?.value;
+    const auth = token ? verifyToken(token) : null;
 
-    if (auth?.role !== 'admin') {
+    if (!auth || auth.role !== 'admin') {
       return NextResponse.json(
         { error: 'Forbidden: admin role required' },
         { status: 403 }

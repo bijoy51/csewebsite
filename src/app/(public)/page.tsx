@@ -25,7 +25,7 @@ function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="max-w-3xl">
+        <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-oxford-gold/30 bg-oxford-gold/10 px-4 py-1.5">
             <span className="h-2 w-2 rounded-full bg-oxford-gold animate-pulse" />
@@ -45,14 +45,14 @@ function HeroSection() {
             Islamic University, Kushtia
           </p>
 
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg">
+          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/65 sm:text-lg">
             Empowering the next generation of technologists through rigorous
             academics, cutting-edge research, and a commitment to ethical
-            innovation since 1996.
+            innovation since 1995.
           </p>
 
           {/* CTA Buttons */}
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
             <Link
               href="#programs"
               className="inline-flex items-center gap-2 rounded-lg bg-oxford-gold px-6 py-3 text-sm font-semibold text-oxford-blue-dark shadow-lg transition-all hover:bg-oxford-gold/90 hover:shadow-xl sm:px-8 sm:py-3.5 sm:text-base"
@@ -83,7 +83,7 @@ function HeroSection() {
           {/* Stats row */}
           <div className="mt-14 grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-8">
             {[
-              { value: '28+', label: 'Years of Excellence' },
+              { value: '30+', label: 'Years of Excellence' },
               { value: '30+', label: 'Faculty Members' },
               { value: '1200+', label: 'Alumni Network' },
               { value: '15+', label: 'Research Labs' },
@@ -122,21 +122,59 @@ function AboutSection() {
             About Us
           </p>
           <h2 className="mt-2 font-serif text-3xl font-bold text-oxford-blue sm:text-4xl">
-            Pioneering CSE Education Since 1996
+            Pioneering CSE Education Since 1995
           </h2>
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-oxford-gold" />
         </div>
 
         {/* Description */}
-        <div className="mx-auto mt-12 max-w-3xl text-center">
-          <p className="text-base leading-relaxed text-gray-600 sm:text-lg">
-            The Department of Computer Science and Engineering at Islamic
-            University, Kushtia, was established in 1996 as one of the first CSE
-            departments in southwestern Bangladesh. Over nearly three decades, we
-            have grown into a vibrant academic community dedicated to producing
-            skilled engineers and researchers who contribute meaningfully to
-            national and global technological progress.
-          </p>
+        <div className="mx-auto mt-12 max-w-4xl">
+          <div className="space-y-5 text-base leading-relaxed text-gray-600 sm:text-lg">
+            <p>
+              The Department of <strong className="text-oxford-blue">Computer Science and Engineering (CSE)</strong> at{' '}
+              <strong className="text-oxford-blue">Islamic University</strong> is committed to excellence in{' '}
+              <strong className="text-oxford-blue">education</strong>, <strong className="text-oxford-blue">research</strong>, and{' '}
+              <strong className="text-oxford-blue">innovation</strong>. We provide our students with a strong foundation in{' '}
+              <strong className="text-oxford-blue">computer science principles</strong> while encouraging practical experience through{' '}
+              <strong className="text-oxford-blue">projects</strong>, <strong className="text-oxford-blue">internships</strong>, and{' '}
+              <strong className="text-oxford-blue">research</strong>.
+            </p>
+            <p>
+              Our faculty members are <strong className="text-oxford-blue">highly qualified</strong> and actively involved in{' '}
+              <strong className="text-oxford-blue">cutting-edge research</strong> and{' '}
+              <strong className="text-oxford-blue">industry collaborations</strong>. They guide students to develop{' '}
+              <strong className="text-oxford-blue">critical thinking</strong>, <strong className="text-oxford-blue">problem-solving skills</strong>, and{' '}
+              <strong className="text-oxford-blue">creativity</strong>, preparing them for careers in{' '}
+              <strong className="text-oxford-blue">software development</strong>, <strong className="text-oxford-blue">artificial intelligence</strong>,{' '}
+              <strong className="text-oxford-blue">cybersecurity</strong>, <strong className="text-oxford-blue">data science</strong>, and more.
+            </p>
+            <p>
+              The department boasts modern <strong className="text-oxford-blue">laboratories</strong> and{' '}
+              <strong className="text-oxford-blue">computing facilities</strong>, including labs for{' '}
+              <strong className="text-oxford-blue">programming</strong>, <strong className="text-oxford-blue">networking</strong>,{' '}
+              <strong className="text-oxford-blue">cybersecurity</strong>, <strong className="text-oxford-blue">AI and machine learning</strong>, and{' '}
+              <strong className="text-oxford-blue">software development</strong>. These labs enable students to gain{' '}
+              <strong className="text-oxford-blue">hands-on experience</strong> and engage in{' '}
+              <strong className="text-oxford-blue">innovative projects</strong> that address real-world challenges.
+            </p>
+            <p>
+              We actively promote <strong className="text-oxford-blue">research and innovation</strong>, with ongoing projects in areas such as{' '}
+              <strong className="text-oxford-blue">AI</strong>, <strong className="text-oxford-blue">machine learning</strong>,{' '}
+              <strong className="text-oxford-blue">cloud computing</strong>, <strong className="text-oxford-blue">IoT</strong>,{' '}
+              <strong className="text-oxford-blue">robotics</strong>, and <strong className="text-oxford-blue">data analytics</strong>. Students are encouraged to participate in{' '}
+              <strong className="text-oxford-blue">conferences</strong>, <strong className="text-oxford-blue">workshops</strong>,{' '}
+              <strong className="text-oxford-blue">hackathons</strong>, and <strong className="text-oxford-blue">research initiatives</strong> to enhance their learning and career prospects.
+            </p>
+            <p>
+              Through <strong className="text-oxford-blue">student clubs</strong>, <strong className="text-oxford-blue">seminars</strong>, and{' '}
+              <strong className="text-oxford-blue">mentorship programs</strong>, we foster{' '}
+              <strong className="text-oxford-blue">collaboration</strong>, <strong className="text-oxford-blue">leadership</strong>, and{' '}
+              <strong className="text-oxford-blue">lifelong learning</strong>. Our graduates are well-prepared to excel in both{' '}
+              <strong className="text-oxford-blue">academic</strong> and <strong className="text-oxford-blue">professional fields</strong>, contribute to{' '}
+              <strong className="text-oxford-blue">technological advancement</strong>, and become{' '}
+              <strong className="text-oxford-blue">responsible innovators</strong> in society.
+            </p>
+          </div>
         </div>
 
         {/* Mission / Vision / Values Cards */}
@@ -161,12 +199,12 @@ function AboutSection() {
             <h3 className="font-serif text-xl font-bold text-oxford-blue">
               Our Mission
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              To provide high-quality, accessible education in computer science
-              and engineering, fostering creativity, critical thinking, and
-              ethical responsibility. We aim to prepare graduates who can solve
-              real-world problems and drive innovation.
-            </p>
+            <ul className="mt-3 space-y-2 text-sm leading-relaxed text-gray-600">
+              <li>1. To provide students with a strong foundation in <strong className="text-oxford-blue">computer science and engineering</strong> principles.</li>
+              <li>2. To promote <strong className="text-oxford-blue">research</strong>, <strong className="text-oxford-blue">innovation</strong>, and <strong className="text-oxford-blue">entrepreneurship</strong>.</li>
+              <li>3. To prepare graduates for <strong className="text-oxford-blue">leadership roles</strong> in industry, academia, and society.</li>
+              <li>4. To foster a culture of <strong className="text-oxford-blue">lifelong learning</strong> and <strong className="text-oxford-blue">professional development</strong>.</li>
+            </ul>
           </div>
 
           {/* Vision */}
@@ -195,10 +233,8 @@ function AboutSection() {
               Our Vision
             </h3>
             <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              To be recognized as a center of excellence in computer science
-              education and research in South Asia, producing globally
-              competitive graduates and contributing to the technological
-              advancement of Bangladesh and beyond.
+              To be a center of excellence in <strong className="text-oxford-blue">computer science education</strong>,{' '}
+              <strong className="text-oxford-blue">research</strong>, and <strong className="text-oxford-blue">innovation</strong>.
             </p>
           </div>
 
@@ -413,55 +449,28 @@ function ProgramsSection() {
    Faculty Section
    ========================================================================== */
 
+const chairman = {
+  name: 'Dr. Md. Shohidul Islam',
+  designation: 'Professor & Chairman',
+};
+
 const facultyMembers = [
-  {
-    name: 'Prof. Dr. Md. Abdur Rahman',
-    designation: 'Professor & Chairman',
-    specialization: 'Machine Learning, Data Mining',
-    image: null,
-  },
-  {
-    name: 'Prof. Dr. Shamim Al Mamun',
-    designation: 'Professor',
-    specialization: 'Computer Networks, IoT',
-    image: null,
-  },
-  {
-    name: 'Dr. Farhana Akter',
-    designation: 'Associate Professor',
-    specialization: 'Image Processing, Computer Vision',
-    image: null,
-  },
-  {
-    name: 'Dr. Md. Kamrul Hasan',
-    designation: 'Associate Professor',
-    specialization: 'Cybersecurity, Cryptography',
-    image: null,
-  },
-  {
-    name: 'Md. Rafiqul Islam',
-    designation: 'Assistant Professor',
-    specialization: 'Software Engineering, DevOps',
-    image: null,
-  },
-  {
-    name: 'Fatema Tuz Zohora',
-    designation: 'Assistant Professor',
-    specialization: 'NLP, Deep Learning',
-    image: null,
-  },
-  {
-    name: 'Md. Tanvir Hossain',
-    designation: 'Lecturer',
-    specialization: 'Cloud Computing, Distributed Systems',
-    image: null,
-  },
-  {
-    name: 'Nusrat Jahan',
-    designation: 'Lecturer',
-    specialization: 'Human-Computer Interaction, UX',
-    image: null,
-  },
+  { name: 'Dr. Md. Farukuzzaman Khan', designation: 'Professor' },
+  { name: 'Dr. Ahsan-Ul-Ambia', designation: 'Professor' },
+  { name: 'Md. Ibrahim Abdullah', designation: 'Professor' },
+  { name: 'Sujit Kumar Mondal', designation: 'Professor' },
+  { name: 'Md. Aktaruzzaman', designation: 'Professor' },
+  { name: 'Dr. Md. Robiul Hoque', designation: 'Professor' },
+  { name: 'Dr. M. Muntasir Rahman', designation: 'Professor' },
+  { name: 'Md. Nazrul Islam', designation: 'Professor' },
+  { name: 'Dr. Md. Mojahidul Islam', designation: 'Professor' },
+  { name: 'A.O.M Asaduzzaman', designation: 'Professor' },
+  { name: 'Dr. Joyassree Sen', designation: 'Professor' },
+  { name: 'Dr. Md. Habibur Rahman', designation: 'Professor' },
+  { name: 'Dr. Md. Shamim Hossain', designation: 'Associate Professor' },
+  { name: 'Mohammad Alamgir Hossain', designation: 'Associate Professor' },
+  { name: 'Md. Atiqur Rahman', designation: 'Associate Professor' },
+  { name: 'Bappa Sarkar', designation: 'Associate Professor' },
 ];
 
 function FacultySection() {
@@ -478,21 +487,50 @@ function FacultySection() {
           </h2>
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-oxford-gold" />
           <p className="mt-4 text-gray-600">
-            Our distinguished faculty brings together expertise in diverse areas
-            of computer science and engineering.
+            Our distinguished faculty of {facultyMembers.length + 1} members brings together
+            expertise in diverse areas of computer science and engineering.
           </p>
         </div>
 
+        {/* Chairman — Featured Card */}
+        <div className="mx-auto mt-14 max-w-md">
+          <article className="group overflow-hidden rounded-2xl border-2 border-oxford-gold/30 bg-white shadow-lg transition-all hover:shadow-xl">
+            <div className="flex h-56 items-center justify-center bg-gradient-to-br from-oxford-blue via-oxford-blue-light to-oxford-blue">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-3 border-oxford-gold/50 bg-white/15 font-serif text-3xl font-bold text-white shadow-lg">
+                {chairman.name
+                  .split(' ')
+                  .filter((n) => n.length > 2)
+                  .slice(0, 2)
+                  .map((n) => n[0])
+                  .join('')}
+              </div>
+            </div>
+            <div className="p-6 text-center">
+              <span className="inline-block rounded-full bg-oxford-gold/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-oxford-gold">
+                Chairman
+              </span>
+              <h3 className="mt-3 font-serif text-xl font-bold text-oxford-blue">
+                {chairman.name}
+              </h3>
+              <p className="mt-1 text-sm font-medium text-oxford-gold">
+                {chairman.designation}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Department of Computer Science &amp; Engineering
+              </p>
+            </div>
+          </article>
+        </div>
+
         {/* Faculty Grid */}
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {facultyMembers.map((member) => (
             <article
               key={member.name}
               className="group overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-md"
             >
-              {/* Avatar Placeholder */}
-              <div className="flex h-48 items-center justify-center bg-gradient-to-br from-oxford-blue to-oxford-blue-light">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-oxford-gold/30 bg-white/10 font-serif text-2xl font-bold text-white">
+              <div className="flex h-40 items-center justify-center bg-gradient-to-br from-oxford-blue to-oxford-blue-light">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-oxford-gold/30 bg-white/10 font-serif text-xl font-bold text-white">
                   {member.name
                     .split(' ')
                     .filter((n) => n.length > 2)
@@ -501,51 +539,16 @@ function FacultySection() {
                     .join('')}
                 </div>
               </div>
-
-              {/* Info */}
-              <div className="p-5 text-center">
-                <h3 className="font-serif text-base font-bold text-oxford-blue">
+              <div className="p-4 text-center">
+                <h3 className="font-serif text-sm font-bold text-oxford-blue">
                   {member.name}
                 </h3>
-                <p className="mt-1 text-sm font-medium text-oxford-gold">
+                <p className="mt-1 text-xs font-medium text-oxford-gold">
                   {member.designation}
                 </p>
-                <p className="mt-2 text-xs text-gray-500">
-                  {member.specialization}
-                </p>
-                {/* Placeholder for profile link */}
-                <a
-                  href="#"
-                  className="mt-3 inline-block text-xs font-medium text-oxford-blue/70 transition-colors hover:text-oxford-blue"
-                >
-                  View Profile &rarr;
-                </a>
               </div>
             </article>
           ))}
-        </div>
-
-        {/* View All */}
-        <div className="mt-10 text-center">
-          <a
-            href="#"
-            className="inline-flex items-center gap-2 rounded-lg border-2 border-oxford-blue px-6 py-3 text-sm font-semibold text-oxford-blue transition-all hover:bg-oxford-blue hover:text-white"
-          >
-            View All Faculty Members
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-              />
-            </svg>
-          </a>
         </div>
       </div>
     </section>
@@ -870,51 +873,44 @@ function ContactSection() {
             </div>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Campus Map */}
           <div className="overflow-hidden rounded-xl border border-gray-200">
-            <div className="flex h-full min-h-[400px] flex-col items-center justify-center bg-gradient-to-br from-oxford-cream to-gray-100 p-8 text-center">
-              <svg
-                className="h-16 w-16 text-oxford-blue/20"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
-                />
-              </svg>
-              <p className="mt-4 font-serif text-lg font-semibold text-oxford-blue/40">
-                Campus Map
-              </p>
-              <p className="mt-2 max-w-xs text-sm text-gray-400">
-                Interactive map will be integrated here. Islamic University is
-                located on the Kushtia-Jhenaidah Highway, approximately 8 km
-                from Kushtia town center.
-              </p>
-              <a
-                href="https://maps.google.com/?q=Islamic+University+Kushtia"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-oxford-blue px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-oxford-blue-light"
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
+            <div className="relative h-full min-h-[400px]">
+              <img
+                src="/images/campus.jfif"
+                alt="Islamic University Campus, Kushtia"
+                className="h-full w-full object-cover"
+                style={{ minHeight: '400px' }}
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                <p className="font-serif text-lg font-semibold text-white">
+                  Islamic University Campus
+                </p>
+                <p className="mt-1 text-sm text-white/80">
+                  Kushtia-Jhenaidah Highway, Kushtia, Bangladesh
+                </p>
+                <a
+                  href="https://earth3dmap.com/#?l=islamic+university"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-oxford-blue px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-oxford-blue-light"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
-                  />
-                </svg>
-                Open in Google Maps
-              </a>
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                    />
+                  </svg>
+                  Open in Google Maps
+                </a>
+              </div>
             </div>
           </div>
         </div>

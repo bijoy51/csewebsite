@@ -1,13 +1,23 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar, { SidebarItem } from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
 import { useAuth } from '@/context/AuthContext';
 
+interface TeacherCourse {
+  _id: string;
+  courseCode: string;
+  courseTitle: string;
+  session: string;
+}
+
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user } = useAuth();
+  const [teacherCourses, setTeacherCourses] = useState<TeacherCourse[]>([]);
 
   // Teacher login page has no sidebar
   if (pathname === '/teachers') {
@@ -17,6 +27,28 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
   // Extract courseCode from URL (e.g., /CSE1101/attendance → CSE1101)
   const segments = pathname.split('/').filter(Boolean);
   const courseCode = decodeURIComponent(segments[0] || '');
+
+  // Get current sub-page (e.g., "attendance", "students", "schedule")
+  const subPage = segments[1] || 'students';
+
+  // Fetch all courses for this teacher
+  useEffect(() => {
+    fetch('/api/auth/me/teacher-courses')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.courses) setTeacherCourses(data.courses);
+      })
+      .catch(console.error);
+  }, []);
+
+  const handleCourseSwitch = (value: string) => {
+    const [newCourseCode] = value.split('|');
+    if (newCourseCode && newCourseCode !== courseCode) {
+      router.push(`/${encodeURIComponent(newCourseCode)}/${subPage}`);
+    }
+  };
+
+  const currentValue = `${courseCode}|${user?.session || ''}`;
 
   const sidebarItems: SidebarItem[] = [
     {
@@ -55,6 +87,15 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         </svg>
       ),
     },
+    {
+      label: 'Class Schedule',
+      href: `/${courseCode}/schedule`,
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
   ];
 
   const getTitle = () => {
@@ -62,6 +103,7 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     if (pathname.includes('/attendance')) return 'Mark Attendance';
     if (pathname.includes('/tutorial')) return 'Tutorial Management';
     if (pathname.includes('/semester')) return 'Semester Results';
+    if (pathname.includes('/schedule')) return 'Class Schedule';
     return courseCode;
   };
 
@@ -69,9 +111,35 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
     <div className="min-h-screen bg-gray-50">
       <Sidebar
         title="Teacher Panel"
-        subtitle={`${courseCode} ${user?.session ? `(${user.session})` : ''}`}
+        subtitle={user?.name || ''}
         items={sidebarItems}
-      />
+      >
+        {teacherCourses.length > 1 ? (
+          <div>
+            <label className="block text-xs font-medium text-white/60 mb-1.5">Switch Course</label>
+            <select
+              value={currentValue}
+              onChange={(e) => handleCourseSwitch(e.target.value)}
+              className="w-full rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-oxford-gold/50 cursor-pointer"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.25rem', appearance: 'none', WebkitAppearance: 'none' }}
+            >
+              {teacherCourses.map((c) => (
+                <option
+                  key={c._id}
+                  value={`${c.courseCode}|${c.session}`}
+                  className="text-gray-900 bg-white"
+                >
+                  {c.courseCode} ({c.session})
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <p className="text-xs text-oxford-gold">
+            {courseCode} {user?.session ? `(${user.session})` : ''}
+          </p>
+        )}
+      </Sidebar>
       <div className="lg:ml-64">
         <Topbar title={getTitle()} />
         <main className="p-6">{children}</main>

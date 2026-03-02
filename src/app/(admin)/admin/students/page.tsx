@@ -16,6 +16,7 @@ interface Student {
   email: string;
   phone: string;
   bloodGroup: string;
+  profilePhoto: string;
 }
 
 export default function AdminStudentsPage() {
@@ -28,6 +29,7 @@ export default function AdminStudentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [newSession, setNewSession] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [searchRoll, setSearchRoll] = useState('');
 
   const fetchSessions = async () => {
     try {
@@ -49,7 +51,7 @@ export default function AdminStudentsPage() {
     if (!session) return;
     setLoadingStudents(true);
     try {
-      const res = await fetch(`/api/students?session=${session}`);
+      const res = await fetch(`/api/students?session=${session}&includePhoto=1`);
       const data = await res.json();
       setStudents(data.students || []);
     } catch (err) {
@@ -155,17 +157,26 @@ export default function AdminStudentsPage() {
       </div>
 
       {activeSession && (
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
           <p className="text-sm text-gray-500">
             {loadingStudents ? 'Loading...' : `${students.length} student${students.length !== 1 ? 's' : ''} in ${activeSession}`}
           </p>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteSession(activeSession)}
-          >
-            Delete Session
-          </Button>
+          <div className="flex items-center gap-3">
+            <input
+              type="text"
+              placeholder="Search by roll..."
+              value={searchRoll}
+              onChange={(e) => setSearchRoll(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue w-44"
+            />
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => handleDeleteSession(activeSession)}
+            >
+              Delete Session
+            </Button>
+          </div>
         </div>
       )}
 
@@ -180,34 +191,57 @@ export default function AdminStudentsPage() {
           <p className="text-center text-gray-500 text-sm py-8">
             No students registered in {activeSession} yet.
           </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Registration No</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Email</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Phone</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Blood Group</th>
-                </tr>
-              </thead>
-              <tbody>
-                {students.map((student) => (
-                  <tr key={student._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium text-oxford-blue">{student.name}</td>
-                    <td className="py-3 px-4">{student.roll}</td>
-                    <td className="py-3 px-4">{student.registrationNo}</td>
-                    <td className="py-3 px-4">{student.email}</td>
-                    <td className="py-3 px-4">{student.phone || '—'}</td>
-                    <td className="py-3 px-4">{student.bloodGroup || '—'}</td>
+        ) : (() => {
+          const filtered = searchRoll.trim()
+            ? students.filter((s) => s.roll.includes(searchRoll.trim()))
+            : students;
+          return filtered.length === 0 ? (
+            <p className="text-center text-gray-500 text-sm py-8">
+              No students found matching &quot;{searchRoll}&quot;.
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Photo</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Registration No</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Email</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Phone</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-600">Blood Group</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {filtered.map((student) => (
+                    <tr key={student._id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        {student.profilePhoto && student.profilePhoto.startsWith('data:') ? (
+                          <img
+                            src={student.profilePhoto}
+                            alt={student.name}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-oxford-blue text-white flex items-center justify-center text-xs font-bold">
+                            {student.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 font-medium text-oxford-blue">{student.name}</td>
+                      <td className="py-3 px-4">{student.roll}</td>
+                      <td className="py-3 px-4">{student.registrationNo}</td>
+                      <td className="py-3 px-4">{student.email}</td>
+                      <td className="py-3 px-4">{student.phone || '—'}</td>
+                      <td className="py-3 px-4">{student.bloodGroup || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </Card>
 
       {/* Add Session Modal */}

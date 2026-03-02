@@ -114,4 +114,14 @@ export const createScheduleSchema = z.object({
   date: z.string().min(1),
   time: z.string().min(1),
   room: z.string().optional(),
+  teacherName: z.string().optional(),
+  topic: z.string().optional(),
+});
+
+export const updateScheduleSchema = z.object({
+  date: z.string().min(1).optional(),
+  time: z.string().min(1).optional(),
+  room: z.string().optional(),
+  teacherName: z.string().optional(),
+  topic: z.string().optional(),
 });

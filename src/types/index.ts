@@ -99,6 +99,8 @@ export interface IClassSchedule {
   date: string;
   time: string;
   room: string;
+  teacherName: string;
+  topic: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -111,6 +113,7 @@ export interface JWTPayload {
   session?: string;
   courseCode?: string;
   roll?: string;
+  teacherName?: string;
 }
 
 export interface AttendanceSummary {

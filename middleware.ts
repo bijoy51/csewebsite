@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { COOKIE_NAME } from '@/lib/constants';
 
-// JWT verification for Edge Runtime (can't use jsonwebtoken in Edge, so we do manual base64 decode)
-function decodeJWT(token: string, secret: string): Record<string, unknown> | null {
+// Role-specific cookie names (must match constants.ts)
+const COOKIE_NAMES: Record<string, string> = {
+  student: 'cse-auth-student',
+  admin: 'cse-auth-admin',
+  teacher: 'cse-auth-teacher',
+  cr: 'cse-auth-cr',
+};
+
+// Lightweight JWT decode — only checks expiration, no crypto.
+// Full verification happens in API routes via getAuthUser().
+function decodeJWT(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
-
-    // Verify signature using Web Crypto API
     const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-
-    // Check expiration
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-      return null;
-    }
-
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null;
     return payload;
   } catch {
     return null;
@@ -23,93 +24,60 @@ function decodeJWT(token: string, secret: string): Record<string, unknown> | nul
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get(COOKIE_NAME)?.value;
 
-  // Define protected route patterns
-  const studentRoutes = pathname.startsWith('/dashboard');
-  const adminRoutes = pathname.startsWith('/admin/dashboard') || pathname.startsWith('/admin/courses') || pathname.startsWith('/admin/cr');
-  const crRoutes = pathname.startsWith('/cr/dashboard');
+  // Determine which protected zone this request belongs to
+  let requiredRole: string | null = null;
+  let loginUrl = '/login';
 
-  // API routes that need protection
-  const protectedAPI = pathname.startsWith('/api/students') ||
-    pathname.startsWith('/api/courses') ||
-    pathname.startsWith('/api/attendance') ||
-    pathname.startsWith('/api/tutorials') ||
-    pathname.startsWith('/api/results') ||
-    pathname.startsWith('/api/schedule') ||
-    pathname.startsWith('/api/admin') ||
-    (pathname.startsWith('/api/cr') && !pathname.startsWith('/api/cr/login'));
-
-  // Check if route needs protection
-  const isTeacherDynamicRoute = /^\/[a-zA-Z]{2,4}\d{4}/.test(pathname) && !pathname.startsWith('/api');
-  const needsAuth = studentRoutes || adminRoutes || crRoutes || isTeacherDynamicRoute || protectedAPI;
-
-  if (!needsAuth) {
-    return NextResponse.next();
+  if (pathname.startsWith('/dashboard')) {
+    requiredRole = 'student';
+    loginUrl = '/login';
+  } else if (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/admin/courses') || pathname.startsWith('/admin/cr') || pathname.startsWith('/admin/students')) {
+    requiredRole = 'admin';
+    loginUrl = '/admin';
+  } else if (pathname.startsWith('/cr/dashboard')) {
+    requiredRole = 'cr';
+    loginUrl = '/cr';
   }
 
+  // Not a protected page — skip entirely
+  if (!requiredRole) return NextResponse.next();
+
+  // Check the role-specific cookie
+  const cookieName = COOKIE_NAMES[requiredRole];
+  const token = request.cookies.get(cookieName)?.value;
+
+  // No token — redirect to login
   if (!token) {
-    if (protectedAPI) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    // Redirect to appropriate login page
-    if (studentRoutes) return NextResponse.redirect(new URL('/login', request.url));
-    if (adminRoutes) return NextResponse.redirect(new URL('/admin', request.url));
-    if (crRoutes) return NextResponse.redirect(new URL('/cr', request.url));
-    if (isTeacherDynamicRoute) return NextResponse.redirect(new URL('/teachers', request.url));
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL(loginUrl, request.url));
   }
 
-  const payload = decodeJWT(token, process.env.JWT_SECRET || '');
+  const payload = decodeJWT(token);
 
   if (!payload) {
-    const response = protectedAPI
-      ? NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-      : NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete(COOKIE_NAME);
+    const response = NextResponse.redirect(new URL(loginUrl, request.url));
+    response.cookies.delete(cookieName);
     return response;
   }
 
-  const role = payload.role as string;
-
-  // Role-based access control
-  if (studentRoutes && role !== 'student') {
-    return protectedAPI
-      ? NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      : NextResponse.redirect(new URL('/', request.url));
+  // Wrong role in token — redirect to login
+  if (payload.role !== requiredRole) {
+    return NextResponse.redirect(new URL(loginUrl, request.url));
   }
 
-  if (adminRoutes && role !== 'admin') {
-    return protectedAPI
-      ? NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      : NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (crRoutes && role !== 'cr') {
-    return protectedAPI
-      ? NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-      : NextResponse.redirect(new URL('/', request.url));
-  }
-
-  if (isTeacherDynamicRoute && role !== 'teacher') {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // Inject user info into headers for API routes
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-user-id', (payload.id as string) || '');
-  requestHeaders.set('x-user-role', role);
-  requestHeaders.set('x-user-session', (payload.session as string) || '');
-  requestHeaders.set('x-user-course', (payload.courseCode as string) || '');
-  requestHeaders.set('x-user-roll', (payload.roll as string) || '');
-
-  return NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  return NextResponse.next();
 }
 
+// CRITICAL: Only match protected page routes.
+// Public pages (/login, /register, /) and API routes are NOT matched,
+// so they skip middleware entirely — saving CPU time on the Worker.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|images|uploads).*)',
+    '/dashboard/:path*',
+    '/admin/dashboard/:path*',
+    '/admin/courses/:path*',
+    '/admin/cr/:path*',
+    '/admin/students/:path*',
+    '/cr/dashboard/:path*',
   ],
 };

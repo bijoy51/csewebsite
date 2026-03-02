@@ -1,4 +1,11 @@
-export const COOKIE_NAME = 'cse-auth-token';
+export const COOKIE_NAME = 'cse-auth-token'; // legacy, kept for reference
+
+export const COOKIE_NAMES: Record<string, string> = {
+  student: 'cse-auth-student',
+  admin: 'cse-auth-admin',
+  teacher: 'cse-auth-teacher',
+  cr: 'cse-auth-cr',
+};
 
 export const ROLES = {
   STUDENT: 'student' as const,

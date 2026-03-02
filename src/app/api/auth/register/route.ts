@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/d1';
 import { hashPassword, signToken } from '@/lib/auth';
 import { registerSchema } from '@/lib/validators';
-import { COOKIE_NAME } from '@/lib/constants';
+import { COOKIE_NAMES } from '@/lib/constants';
 
 export async function POST(req: NextRequest) {
   try {
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
 
-    response.cookies.set(COOKIE_NAME, token, {
+    response.cookies.set(COOKIE_NAMES.student, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',

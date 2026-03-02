@@ -15,9 +15,10 @@ interface SidebarProps {
   title: string;
   subtitle?: string;
   items: SidebarItem[];
+  children?: React.ReactNode;
 }
 
-export default function Sidebar({ title, subtitle, items }: SidebarProps) {
+export default function Sidebar({ title, subtitle, items, children }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -57,6 +58,12 @@ export default function Sidebar({ title, subtitle, items }: SidebarProps) {
           <h2 className="text-lg font-bold font-serif">{title}</h2>
           {subtitle && <p className="text-sm text-oxford-gold mt-1">{subtitle}</p>}
         </div>
+
+        {children && (
+          <div className="px-3 pt-3 border-b border-oxford-blue-light pb-3">
+            {children}
+          </div>
+        )}
 
         <nav className="mt-4 px-3">
           {items.map((item) => {

@@ -27,6 +27,12 @@ interface CurriculumCourse {
   isOptional: number;
 }
 
+interface Teacher {
+  _id: string;
+  name: string;
+  designation: string;
+}
+
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [sessions, setSessions] = useState<string[]>([]);
@@ -51,9 +57,13 @@ export default function AdminCoursesPage() {
   const [curriculumSuggestions, setCurriculumSuggestions] = useState<CurriculumCourse[]>([]);
   const [showCourseDropdown, setShowCourseDropdown] = useState(false);
   const [allCurriculum, setAllCurriculum] = useState<CurriculumCourse[]>([]);
+  const [allTeachers, setAllTeachers] = useState<Teacher[]>([]);
+  const [teacherSuggestions, setTeacherSuggestions] = useState<Teacher[]>([]);
+  const [showTeacherDropdown, setShowTeacherDropdown] = useState(false);
 
   const sessionDropdownRef = useRef<HTMLDivElement>(null);
   const courseDropdownRef = useRef<HTMLDivElement>(null);
+  const teacherDropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
     try {
@@ -87,9 +97,20 @@ export default function AdminCoursesPage() {
     }
   };
 
+  const fetchTeachers = async () => {
+    try {
+      const res = await fetch('/api/teachers');
+      const data = await res.json();
+      setAllTeachers(data.teachers || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     fetchCurriculum();
+    fetchTeachers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -101,6 +122,9 @@ export default function AdminCoursesPage() {
       }
       if (courseDropdownRef.current && !courseDropdownRef.current.contains(e.target as Node)) {
         setShowCourseDropdown(false);
+      }
+      if (teacherDropdownRef.current && !teacherDropdownRef.current.contains(e.target as Node)) {
+        setShowTeacherDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -143,6 +167,26 @@ export default function AdminCoursesPage() {
       setShowCourseDropdown(false);
     }
   }, [allCurriculum]);
+
+  // Teacher name autocomplete logic
+  const handleTeacherNameChange = useCallback((value: string) => {
+    setForm((prev) => ({ ...prev, teacherName: value }));
+    if (value.trim()) {
+      const filtered = allTeachers.filter((t) =>
+        t.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setTeacherSuggestions(filtered);
+      setShowTeacherDropdown(filtered.length > 0);
+    } else {
+      setTeacherSuggestions(allTeachers);
+      setShowTeacherDropdown(allTeachers.length > 0);
+    }
+  }, [allTeachers]);
+
+  const selectTeacher = (t: Teacher) => {
+    setForm((prev) => ({ ...prev, teacherName: t.name }));
+    setShowTeacherDropdown(false);
+  };
 
   const selectCourse = (c: CurriculumCourse) => {
     setForm((prev) => ({
@@ -362,14 +406,40 @@ export default function AdminCoursesPage() {
             onChange={(e) => setForm({ ...form, courseTitle: e.target.value })}
             required
           />
-          <Input
-            id="teacher-name"
-            label="Teacher Name"
-            placeholder="e.g., Dr. Ahmed"
-            value={form.teacherName}
-            onChange={(e) => setForm({ ...form, teacherName: e.target.value })}
-            required
-          />
+          {/* Teacher Name with autocomplete */}
+          <div ref={teacherDropdownRef} className="relative">
+            <Input
+              id="teacher-name"
+              label="Teacher Name"
+              placeholder="Start typing teacher name..."
+              value={form.teacherName}
+              onChange={(e) => handleTeacherNameChange(e.target.value)}
+              onFocus={() => {
+                const filtered = form.teacherName.trim()
+                  ? allTeachers.filter((t) => t.name.toLowerCase().includes(form.teacherName.toLowerCase()))
+                  : allTeachers;
+                setTeacherSuggestions(filtered);
+                setShowTeacherDropdown(filtered.length > 0);
+              }}
+              autoComplete="off"
+              required
+            />
+            {showTeacherDropdown && teacherSuggestions.length > 0 && (
+              <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto">
+                {teacherSuggestions.map((t) => (
+                  <button
+                    key={t._id}
+                    type="button"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-oxford-blue/5 transition-colors border-b border-gray-50 last:border-0"
+                    onClick={() => selectTeacher(t)}
+                  >
+                    <span className="font-medium text-oxford-blue">{t.name}</span>
+                    <span className="text-gray-400 ml-2 text-xs">{t.designation}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <Input
             id="course-password"
             label="Teacher Password"

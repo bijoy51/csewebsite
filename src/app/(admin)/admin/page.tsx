@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
       }
 
       setToast({ message: 'Login successful!', type: 'success' });
-      await refreshUser();
+      await refreshUser('admin');
       setTimeout(() => router.push('/admin/dashboard'), 500);
     } catch {
       setToast({ message: 'Something went wrong', type: 'error' });

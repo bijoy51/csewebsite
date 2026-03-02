@@ -24,10 +24,14 @@ export async function GET(req: NextRequest) {
     }
 
     const db = await getDB();
+    // Only include profile_photo when explicitly requested (it's base64, can be large)
+    const includePhoto = searchParams.get('includePhoto') === '1';
+    const columns = includePhoto
+      ? 'id AS _id, name, roll, registration_no AS registrationNo, session, email, profile_photo AS profilePhoto, phone, blood_group AS bloodGroup, address'
+      : 'id AS _id, name, roll, registration_no AS registrationNo, session, email, phone, blood_group AS bloodGroup, address';
+
     const { results } = await db
-      .prepare(
-        'SELECT id AS _id, name, roll, registration_no AS registrationNo, session, email, profile_photo AS profilePhoto, phone, blood_group AS bloodGroup, address, created_at AS createdAt, updated_at AS updatedAt FROM students WHERE session = ? ORDER BY roll ASC'
-      )
+      .prepare(`SELECT ${columns} FROM students WHERE session = ? ORDER BY roll ASC`)
       .bind(session)
       .all();
 
