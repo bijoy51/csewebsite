@@ -98,7 +98,7 @@ export default function AdminCRPage() {
     <div>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <p className="text-sm text-gray-500">Total CRs: {crs.length}</p>
         <Button onClick={() => setShowModal(true)}>Add CR</Button>
       </div>
@@ -113,10 +113,10 @@ export default function AdminCRPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Session</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Actions</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Session</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Name</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Roll</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -125,15 +125,15 @@ export default function AdminCRPage() {
                     <tr key={cr._id} className="border-b border-gray-100 hover:bg-gray-50">
                       {idx === 0 && (
                         <td
-                          className="py-3 px-4 font-medium text-oxford-blue"
+                          className="py-3 px-2 sm:px-4 font-medium text-oxford-blue"
                           rowSpan={sessionCrs.length}
                         >
                           {session}
                         </td>
                       )}
-                      <td className="py-3 px-4">{cr.name}</td>
-                      <td className="py-3 px-4">{cr.roll}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-2 sm:px-4">{cr.name}</td>
+                      <td className="py-3 px-2 sm:px-4">{cr.roll}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center">
                         <Button variant="danger" size="sm" onClick={() => handleDelete(cr._id)}>
                           Delete
                         </Button>

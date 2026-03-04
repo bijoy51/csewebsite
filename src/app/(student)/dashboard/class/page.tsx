@@ -76,24 +76,24 @@ export default function ClassSchedulePage() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-[500px]">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Course Code</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Time</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Room</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Teacher</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Topic</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Course Code</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Time</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Room</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Teacher</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Topic</th>
                     </tr>
                   </thead>
                   <tbody>
                     {entries.map((entry) => (
                       <tr key={entry._id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                        <td className="py-2.5 px-4 font-medium text-oxford-blue">{entry.courseCode}</td>
-                        <td className="py-2.5 px-4">{entry.time}</td>
-                        <td className="py-2.5 px-4">{entry.room || '—'}</td>
-                        <td className="py-2.5 px-4">{entry.teacherName || '—'}</td>
-                        <td className="py-2.5 px-4">{entry.topic || '—'}</td>
+                        <td className="py-2.5 px-3 font-medium text-oxford-blue whitespace-nowrap">{entry.courseCode}</td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">{entry.time}</td>
+                        <td className="py-2.5 px-3">{entry.room || '—'}</td>
+                        <td className="py-2.5 px-3">{entry.teacherName || '—'}</td>
+                        <td className="py-2.5 px-3">{entry.topic || '—'}</td>
                       </tr>
                     ))}
                   </tbody>

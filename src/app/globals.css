@@ -25,6 +25,7 @@ body {
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -38,4 +39,28 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-oxford-blue);
+}
+
+/* Thin scrollbar for horizontal scroll areas */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+  border-radius: 2px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Firefox thin scrollbar */
+.overflow-x-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #c0c0c0 transparent;
 }

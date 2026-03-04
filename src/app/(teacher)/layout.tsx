@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Sidebar, { SidebarItem } from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
@@ -16,8 +16,10 @@ interface TeacherCourse {
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [teacherCourses, setTeacherCourses] = useState<TeacherCourse[]>([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
   // Teacher login page has no sidebar
   if (pathname === '/teachers') {
@@ -30,6 +32,13 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
 
   // Get current sub-page (e.g., "attendance", "students", "schedule")
   const subPage = segments[1] || 'students';
+
+  // Redirect to login if session expired
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'teacher')) {
+      router.replace('/teachers');
+    }
+  }, [user, loading, router]);
 
   // Fetch all courses for this teacher
   useEffect(() => {
@@ -47,6 +56,10 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
       router.push(`/${encodeURIComponent(newCourseCode)}/${subPage}`);
     }
   };
+
+  if (loading || !user || user.role !== 'teacher') {
+    return null;
+  }
 
   const currentValue = `${courseCode}|${user?.session || ''}`;
 
@@ -113,6 +126,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         title="Teacher Panel"
         subtitle={user?.name || ''}
         items={sidebarItems}
+        mobileOpen={sidebarOpen}
+        onToggle={toggleSidebar}
       >
         {teacherCourses.length > 1 ? (
           <div>
@@ -141,8 +156,8 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
         )}
       </Sidebar>
       <div className="lg:ml-64">
-        <Topbar title={getTitle()} />
-        <main className="p-6">{children}</main>
+        <Topbar title={getTitle()} onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

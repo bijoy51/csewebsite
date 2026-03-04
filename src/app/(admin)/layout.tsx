@@ -1,8 +1,10 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar, { SidebarItem } from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
+import { useAuth } from '@/context/AuthContext';
 
 const sidebarItems: SidebarItem[] = [
   {
@@ -41,14 +43,38 @@ const sidebarItems: SidebarItem[] = [
       </svg>
     ),
   },
+  {
+    label: 'Notice Management',
+    href: '/admin/notices',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+      </svg>
+    ),
+  },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
   // Admin login page has no sidebar
   if (pathname === '/admin') {
     return <>{children}</>;
+  }
+
+  // Redirect to login if session expired
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'admin')) {
+      router.replace('/admin');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user || user.role !== 'admin') {
+    return null;
   }
 
   const getTitle = () => {
@@ -56,15 +82,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (pathname.includes('/students')) return 'Student Management';
     if (pathname.includes('/courses')) return 'Course Management';
     if (pathname.includes('/cr')) return 'CR Management';
+    if (pathname.includes('/notices')) return 'Notice Management';
     return 'Admin Panel';
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar title="Admin Panel" subtitle="CSE Department" items={sidebarItems} />
+      <Sidebar title="Admin Panel" subtitle="CSE Department" items={sidebarItems} mobileOpen={sidebarOpen} onToggle={toggleSidebar} />
       <div className="lg:ml-64">
-        <Topbar title={getTitle()} />
-        <main className="p-6">{children}</main>
+        <Topbar title={getTitle()} onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

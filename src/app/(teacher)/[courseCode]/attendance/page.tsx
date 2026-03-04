@@ -130,23 +130,23 @@ export default function TeacherAttendancePage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">#</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Status</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">#</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Name</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Roll</th>
+                    <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((student, idx) => (
                     <tr key={student._id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-gray-500">{idx + 1}</td>
-                      <td className="py-3 px-4 font-medium">{student.name}</td>
-                      <td className="py-3 px-4">{student.roll}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-2 sm:px-4 text-gray-500">{idx + 1}</td>
+                      <td className="py-3 px-2 sm:px-4 font-medium">{student.name}</td>
+                      <td className="py-3 px-2 sm:px-4">{student.roll}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center">
                         <button
                           type="button"
                           onClick={() => toggleAttendance(student._id)}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors min-h-[36px] ${
                             records[student._id] === 'present'
                               ? 'bg-green-100 text-green-700 hover:bg-green-200'
                               : 'bg-red-100 text-red-700 hover:bg-red-200'

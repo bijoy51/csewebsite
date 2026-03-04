@@ -1,6 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { useState, useCallback, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import Sidebar, { SidebarItem } from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
 import { useAuth } from '@/context/AuthContext';
@@ -28,11 +29,24 @@ const sidebarItems: SidebarItem[] = [
 
 export default function CRLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
 
   // CR login page has no sidebar
   if (pathname === '/cr') {
     return <>{children}</>;
+  }
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'cr')) {
+      router.replace('/cr');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user || user.role !== 'cr') {
+    return null;
   }
 
   return (
@@ -41,10 +55,12 @@ export default function CRLayout({ children }: { children: React.ReactNode }) {
         title="CR Panel"
         subtitle={user?.session ? `Session: ${user.session}` : 'CSE Department'}
         items={sidebarItems}
+        mobileOpen={sidebarOpen}
+        onToggle={toggleSidebar}
       />
       <div className="lg:ml-64">
-        <Topbar title={pathname.includes('/schedule') ? 'Class Schedule' : 'Mark Attendance'} />
-        <main className="p-6">{children}</main>
+        <Topbar title={pathname.includes('/schedule') ? 'Class Schedule' : 'Mark Attendance'} onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

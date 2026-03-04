@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useCallback, useEffect } from 'react';
 import Sidebar, { SidebarItem } from '@/components/layout/Sidebar';
 import Topbar from '@/components/layout/Topbar';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const sidebarItems: SidebarItem[] = [
   {
@@ -54,6 +56,20 @@ const sidebarItems: SidebarItem[] = [
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = useCallback(() => setSidebarOpen((v) => !v), []);
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'student')) {
+      router.replace('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user || user.role !== 'student') {
+    return null;
+  }
 
   const getTitle = () => {
     if (pathname.includes('/class')) return 'Class Schedule';
@@ -66,10 +82,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Sidebar title="Student Panel" subtitle="CSE Department" items={sidebarItems} />
+      <Sidebar title="Student Panel" subtitle="CSE Department" items={sidebarItems} mobileOpen={sidebarOpen} onToggle={toggleSidebar} />
       <div className="lg:ml-64">
-        <Topbar title={getTitle()} />
-        <main className="p-6">{children}</main>
+        <Topbar title={getTitle()} onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen} />
+        <main className="p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

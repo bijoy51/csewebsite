@@ -30,7 +30,7 @@ export default function Toast({ message, type = 'info', onClose, duration = 3000
   return (
     <div
       className={cn(
-        'fixed top-4 right-4 z-[100] px-4 py-3 rounded-lg text-white text-sm shadow-lg transition-all duration-300',
+        'fixed top-2 right-2 sm:top-4 sm:right-4 z-[100] px-3 py-2 sm:px-4 sm:py-3 rounded-lg text-white text-sm shadow-lg transition-all duration-300 max-w-[calc(100vw-1rem)] sm:max-w-sm',
         colors[type],
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
       )}

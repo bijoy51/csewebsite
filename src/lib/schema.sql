@@ -148,6 +148,19 @@ CREATE TABLE IF NOT EXISTS teachers (
   created_at TEXT DEFAULT (datetime('now'))
 );
 
+-- Notices table
+CREATE TABLE IF NOT EXISTS notices (
+  id TEXT PRIMARY KEY DEFAULT (hex(randomblob(12))),
+  type TEXT NOT NULL CHECK(type IN ('image', 'text', 'card')),
+  title TEXT NOT NULL,
+  content TEXT DEFAULT '',
+  image_url TEXT DEFAULT '',
+  category TEXT DEFAULT '',
+  date TEXT DEFAULT (date('now')),
+  created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now'))
+);
+
 -- Curriculum table (predefined course catalog)
 CREATE TABLE IF NOT EXISTS curriculum (
   id TEXT PRIMARY KEY DEFAULT (hex(randomblob(12))),

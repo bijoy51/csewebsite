@@ -49,28 +49,28 @@ export default function AttendancePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Course</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Total Classes</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Attended</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Missed</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Percentage</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Course</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600 hidden sm:table-cell">Total</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Attended</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600 hidden sm:table-cell">Missed</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Percentage</th>
                 </tr>
               </thead>
               <tbody>
                 {attendance.map((item) => (
                   <tr key={item.courseCode} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-2 sm:px-4">
                       <div>
                         <p className="font-medium text-oxford-blue">{item.courseCode}</p>
                         {item.courseTitle && (
-                          <p className="text-xs text-gray-500">{item.courseTitle}</p>
+                          <p className="text-xs text-gray-500 hidden sm:block">{item.courseTitle}</p>
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-center">{item.totalClasses}</td>
-                    <td className="py-3 px-4 text-center text-green-600">{item.attended}</td>
-                    <td className="py-3 px-4 text-center text-red-600">{item.missed}</td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-2 sm:px-4 text-center hidden sm:table-cell">{item.totalClasses}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center text-green-600">{item.attended}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center text-red-600 hidden sm:table-cell">{item.missed}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center">
                       <span className={`font-semibold ${getAttendanceColor(item.percentage)}`}>
                         {item.percentage.toFixed(1)}%
                       </span>

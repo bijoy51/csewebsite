@@ -34,7 +34,6 @@ export default function TeacherSchedulePage() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('');
   const [room, setRoom] = useState('');
-  const [teacherName, setTeacherName] = useState('');
   const [topic, setTopic] = useState('');
 
   // Edit state
@@ -57,11 +56,12 @@ export default function TeacherSchedulePage() {
     }
   }, [user, authLoading]);
 
+  const teacherName = user?.name || '';
+
   const resetForm = () => {
     setDate(new Date().toISOString().split('T')[0]);
     setTime('');
     setRoom('');
-    setTeacherName('');
     setTopic('');
     setEditingId(null);
   };
@@ -120,7 +120,6 @@ export default function TeacherSchedulePage() {
     setDate(entry.date);
     setTime(entry.time);
     setRoom(entry.room || '');
-    setTeacherName(entry.teacherName || '');
     setTopic(entry.topic || '');
   };
 
@@ -151,29 +150,28 @@ export default function TeacherSchedulePage() {
         <h3 className="text-sm font-semibold text-oxford-blue mb-3">
           {editingId ? 'Edit Schedule' : 'Add New Schedule'}
         </h3>
-        <div className="flex flex-wrap items-end gap-4">
-          <div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="w-full sm:w-auto">
             <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
             <input
               type="date"
               id="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
             />
           </div>
-          <div>
+          <div className="w-full sm:w-auto">
             <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">Time</label>
             <input
-              type="text"
+              type="time"
               id="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              placeholder="e.g. 10:00 AM"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
             />
           </div>
-          <div>
+          <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[120px]">
             <label htmlFor="room" className="block text-sm font-medium text-gray-700 mb-1">Room</label>
             <input
               type="text"
@@ -181,21 +179,20 @@ export default function TeacherSchedulePage() {
               value={room}
               onChange={(e) => setRoom(e.target.value)}
               placeholder="e.g. Room 301"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
             />
           </div>
-          <div>
+          <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
             <label htmlFor="teacherName" className="block text-sm font-medium text-gray-700 mb-1">Teacher Name</label>
             <input
               type="text"
               id="teacherName"
               value={teacherName}
-              onChange={(e) => setTeacherName(e.target.value)}
-              placeholder="Teacher name"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              readOnly
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600 cursor-not-allowed"
             />
           </div>
-          <div>
+          <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
             <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
             <input
               type="text"
@@ -203,10 +200,10 @@ export default function TeacherSchedulePage() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="Class topic"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="w-full sm:w-auto flex gap-2">
             <Button onClick={handleSubmit} loading={submitting}>
               {editingId ? 'Update' : 'Add Schedule'}
             </Button>
@@ -230,36 +227,36 @@ export default function TeacherSchedulePage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Date</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Time</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Room</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Teacher</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Topic</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Actions</th>
+                  <th className="text-left py-3 px-3 font-medium text-gray-600">Date</th>
+                  <th className="text-left py-3 px-3 font-medium text-gray-600">Time</th>
+                  <th className="text-left py-3 px-3 font-medium text-gray-600">Room</th>
+                  <th className="text-left py-3 px-3 font-medium text-gray-600">Teacher</th>
+                  <th className="text-left py-3 px-3 font-medium text-gray-600">Topic</th>
+                  <th className="text-center py-3 px-3 font-medium text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {schedules.map((entry) => (
                   <tr key={entry._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4">{formatDate(entry.date)}</td>
-                    <td className="py-3 px-4">{entry.time}</td>
-                    <td className="py-3 px-4">{entry.room || '—'}</td>
-                    <td className="py-3 px-4">{entry.teacherName || '—'}</td>
-                    <td className="py-3 px-4">{entry.topic || '—'}</td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-3 whitespace-nowrap">{formatDate(entry.date)}</td>
+                    <td className="py-3 px-3 whitespace-nowrap">{entry.time}</td>
+                    <td className="py-3 px-3">{entry.room || '—'}</td>
+                    <td className="py-3 px-3">{entry.teacherName || '—'}</td>
+                    <td className="py-3 px-3">{entry.topic || '—'}</td>
+                    <td className="py-3 px-3 text-center">
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => handleEdit(entry)}
-                          className="text-oxford-blue hover:text-blue-700 text-xs font-medium"
+                          className="text-oxford-blue hover:text-blue-700 text-xs font-medium px-2 py-1"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(entry._id)}
-                          className="text-red-500 hover:text-red-700 text-xs font-medium"
+                          className="text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1"
                         >
                           Delete
                         </button>

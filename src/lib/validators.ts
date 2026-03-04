@@ -125,3 +125,14 @@ export const updateScheduleSchema = z.object({
   teacherName: z.string().optional(),
   topic: z.string().optional(),
 });
+
+export const createNoticeSchema = z.object({
+  type: z.enum(['image', 'text', 'card']),
+  title: z.string().min(1, 'Title is required'),
+  content: z.string().optional().default(''),
+  image_url: z.string().optional().default(''),
+  category: z.string().optional().default(''),
+  date: z.string().optional(),
+});
+
+export const updateNoticeSchema = createNoticeSchema.partial();

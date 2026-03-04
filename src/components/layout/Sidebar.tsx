@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface SidebarItem {
   label: string;
@@ -16,33 +16,20 @@ interface SidebarProps {
   subtitle?: string;
   items: SidebarItem[];
   children?: React.ReactNode;
+  mobileOpen: boolean;
+  onToggle: () => void;
 }
 
-export default function Sidebar({ title, subtitle, items, children }: SidebarProps) {
+export default function Sidebar({ title, subtitle, items, children, mobileOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-oxford-blue text-white rounded-lg shadow-lg"
-      >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {mobileOpen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          )}
-        </svg>
-      </button>
-
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setMobileOpen(false)}
+          onClick={onToggle}
         />
       )}
 
@@ -54,9 +41,20 @@ export default function Sidebar({ title, subtitle, items, children }: SidebarPro
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="p-6 border-b border-oxford-blue-light">
-          <h2 className="text-lg font-bold font-serif">{title}</h2>
-          {subtitle && <p className="text-sm text-oxford-gold mt-1">{subtitle}</p>}
+        <div className="p-6 border-b border-oxford-blue-light flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-bold font-serif">{title}</h2>
+            {subtitle && <p className="text-sm text-oxford-gold mt-1">{subtitle}</p>}
+          </div>
+          <button
+            onClick={onToggle}
+            className="lg:hidden p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 -mr-1.5 -mt-1.5"
+            aria-label="Close menu"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         {children && (
@@ -72,7 +70,7 @@ export default function Sidebar({ title, subtitle, items, children }: SidebarPro
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setMobileOpen(false)}
+                onClick={() => mobileOpen && onToggle()}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1',
                   isActive

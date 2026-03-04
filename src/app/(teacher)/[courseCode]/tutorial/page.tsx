@@ -211,20 +211,20 @@ export default function TeacherTutorialPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">#</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Attended</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Marks</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">#</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Name</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Roll</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Attended</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Marks</th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((student, idx) => (
                   <tr key={student._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-500">{idx + 1}</td>
-                    <td className="py-3 px-4 font-medium">{student.name}</td>
-                    <td className="py-3 px-4">{student.roll}</td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-2 sm:px-4 text-gray-500">{idx + 1}</td>
+                    <td className="py-3 px-2 sm:px-4 font-medium">{student.name}</td>
+                    <td className="py-3 px-2 sm:px-4">{student.roll}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center">
                       <input
                         type="checkbox"
                         checked={marks[student._id]?.attended ?? true}
@@ -234,10 +234,10 @@ export default function TeacherTutorialPage() {
                             [student._id]: { ...marks[student._id], attended: e.target.checked },
                           })
                         }
-                        className="w-4 h-4 accent-oxford-blue"
+                        className="w-5 h-5 accent-oxford-blue"
                       />
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-2 sm:px-4 text-center">
                       <input
                         type="number"
                         min={0}
@@ -252,7 +252,7 @@ export default function TeacherTutorialPage() {
                             },
                           })
                         }
-                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+                        className="w-16 sm:w-20 px-2 py-1.5 border border-gray-300 rounded text-center text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
                       />
                     </td>
                   </tr>

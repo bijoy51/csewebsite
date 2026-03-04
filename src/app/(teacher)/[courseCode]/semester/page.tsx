@@ -124,24 +124,24 @@ export default function TeacherSemesterPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">#</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">Grade</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">GPA</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">#</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Name</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Roll</th>
+                    <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Grade</th>
+                    <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">GPA</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((student, idx) => (
                     <tr key={student._id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-gray-500">{idx + 1}</td>
-                      <td className="py-3 px-4 font-medium">{student.name}</td>
-                      <td className="py-3 px-4">{student.roll}</td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-2 sm:px-4 text-gray-500">{idx + 1}</td>
+                      <td className="py-3 px-2 sm:px-4 font-medium">{student.name}</td>
+                      <td className="py-3 px-2 sm:px-4">{student.roll}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center">
                         <select
                           value={results[student._id]?.grade || 'A+'}
                           onChange={(e) => handleGradeChange(student._id, e.target.value)}
-                          className="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+                          className="px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
                         >
                           {GRADES.map((g) => (
                             <option key={g} value={g}>
@@ -150,7 +150,7 @@ export default function TeacherSemesterPage() {
                           ))}
                         </select>
                       </td>
-                      <td className="py-3 px-4 text-center font-medium">
+                      <td className="py-3 px-2 sm:px-4 text-center font-medium">
                         {results[student._id]?.gpa?.toFixed(2) || '4.00'}
                       </td>
                     </tr>

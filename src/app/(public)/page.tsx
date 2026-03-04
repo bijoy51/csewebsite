@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import NoticesSection from './NoticesSection';
 
 /* ==========================================================================
    Hero Section
@@ -180,7 +181,7 @@ function AboutSection() {
         {/* Mission / Vision / Values Cards */}
         <div className="mt-16 grid gap-8 md:grid-cols-3">
           {/* Mission */}
-          <div className="group rounded-xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:border-oxford-gold/30 hover:shadow-md">
+          <div className="group rounded-xl border border-gray-100 bg-white p-5 sm:p-8 shadow-sm transition-all hover:border-oxford-gold/30 hover:shadow-md">
             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-oxford-blue/5 text-oxford-blue transition-colors group-hover:bg-oxford-blue group-hover:text-white">
               <svg
                 className="h-6 w-6"
@@ -208,7 +209,7 @@ function AboutSection() {
           </div>
 
           {/* Vision */}
-          <div className="group rounded-xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:border-oxford-gold/30 hover:shadow-md">
+          <div className="group rounded-xl border border-gray-100 bg-white p-5 sm:p-8 shadow-sm transition-all hover:border-oxford-gold/30 hover:shadow-md">
             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-oxford-blue/5 text-oxford-blue transition-colors group-hover:bg-oxford-blue group-hover:text-white">
               <svg
                 className="h-6 w-6"
@@ -239,7 +240,7 @@ function AboutSection() {
           </div>
 
           {/* Values */}
-          <div className="group rounded-xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:border-oxford-gold/30 hover:shadow-md">
+          <div className="group rounded-xl border border-gray-100 bg-white p-5 sm:p-8 shadow-sm transition-all hover:border-oxford-gold/30 hover:shadow-md">
             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg bg-oxford-blue/5 text-oxford-blue transition-colors group-hover:bg-oxford-blue group-hover:text-white">
               <svg
                 className="h-6 w-6"
@@ -555,160 +556,7 @@ function FacultySection() {
   );
 }
 
-/* ==========================================================================
-   News & Events Section
-   ========================================================================== */
-
-const newsItems = [
-  {
-    date: 'Feb 20, 2026',
-    category: 'Admission',
-    title: 'Spring 2026 Admission Open for B.Sc. in CSE',
-    excerpt:
-      'Applications are now being accepted for the Spring 2026 semester. Eligible HSC graduates with a strong background in science may apply online or visit the department office.',
-  },
-  {
-    date: 'Feb 10, 2026',
-    category: 'Seminar',
-    title: 'Guest Lecture on Generative AI and Its Applications',
-    excerpt:
-      'Professor Dr. Anisul Haque from BUET delivered an insightful seminar on the recent advances in generative AI and large language models, attended by over 200 students and faculty.',
-  },
-  {
-    date: 'Jan 28, 2026',
-    category: 'Achievement',
-    title: 'IU CSE Team Wins Regional Programming Contest',
-    excerpt:
-      'Our undergraduate team secured 1st place at the Southwestern Regional ICPC Preliminary, qualifying for the national round. Congratulations to the team members and their coach.',
-  },
-  {
-    date: 'Jan 15, 2026',
-    category: 'Research',
-    title: 'Faculty Paper Accepted at IEEE International Conference',
-    excerpt:
-      'A research paper by Dr. Farhana Akter on deep learning-based medical image segmentation has been accepted for presentation at the IEEE ICIP 2026 conference.',
-  },
-  {
-    date: 'Dec 30, 2025',
-    category: 'Notice',
-    title: 'Updated Academic Calendar for 2026',
-    excerpt:
-      'The revised academic calendar for the year 2026 has been published. Students are advised to check the portal for class schedules, examination dates, and semester breaks.',
-  },
-  {
-    date: 'Dec 18, 2025',
-    category: 'Workshop',
-    title: 'Two-Day Workshop on Cloud Computing and DevOps',
-    excerpt:
-      'The department organized a hands-on workshop covering AWS services, containerization with Docker, and CI/CD pipelines. Industry professionals from leading tech companies served as instructors.',
-  },
-];
-
-const categoryColors: Record<string, string> = {
-  Admission: 'bg-green-50 text-green-700',
-  Seminar: 'bg-purple-50 text-purple-700',
-  Achievement: 'bg-amber-50 text-amber-700',
-  Research: 'bg-blue-50 text-blue-700',
-  Notice: 'bg-red-50 text-red-700',
-  Workshop: 'bg-teal-50 text-teal-700',
-};
-
-function NewsEventsSection() {
-  return (
-    <section id="news" className="bg-oxford-cream py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Heading */}
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-oxford-gold">
-            News &amp; Events
-          </p>
-          <h2 className="mt-2 font-serif text-3xl font-bold text-oxford-blue sm:text-4xl">
-            Latest Announcements
-          </h2>
-          <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-oxford-gold" />
-          <p className="mt-4 text-gray-600">
-            Stay updated with the latest happenings, events, and achievements of
-            our department.
-          </p>
-        </div>
-
-        {/* News Grid */}
-        <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {newsItems.map((item) => (
-            <article
-              key={item.title}
-              className="group flex flex-col rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:shadow-md"
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    'rounded-full px-3 py-1 text-xs font-semibold',
-                    categoryColors[item.category] ??
-                      'bg-gray-50 text-gray-700'
-                  )}
-                >
-                  {item.category}
-                </span>
-                <time className="text-xs text-gray-400">{item.date}</time>
-              </div>
-
-              <h3 className="mt-4 font-serif text-base font-bold leading-snug text-oxford-blue group-hover:text-oxford-blue-light">
-                {item.title}
-              </h3>
-
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-gray-500">
-                {item.excerpt}
-              </p>
-
-              <a
-                href="#"
-                className="mt-4 inline-flex items-center gap-1 self-start text-sm font-medium text-oxford-blue/70 transition-colors hover:text-oxford-gold"
-              >
-                Read More
-                <svg
-                  className="h-3.5 w-3.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-                  />
-                </svg>
-              </a>
-            </article>
-          ))}
-        </div>
-
-        {/* View All News */}
-        <div className="mt-10 text-center">
-          <a
-            href="#"
-            className="inline-flex items-center gap-2 rounded-lg border-2 border-oxford-blue px-6 py-3 text-sm font-semibold text-oxford-blue transition-all hover:bg-oxford-blue hover:text-white"
-          >
-            View All News
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
+/* NewsEventsSection replaced by dynamic NoticesSection (imported above) */
 
 /* ==========================================================================
    Contact Section
@@ -875,12 +723,12 @@ function ContactSection() {
 
           {/* Campus Map */}
           <div className="overflow-hidden rounded-xl border border-gray-200">
-            <div className="relative h-full min-h-[400px]">
+            <div className="relative h-full min-h-[280px] sm:min-h-[400px]">
               <img
                 src="/images/campus.jfif"
                 alt="Islamic University Campus, Kushtia"
                 className="h-full w-full object-cover"
-                style={{ minHeight: '400px' }}
+                style={{ minHeight: 'inherit' }}
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-6">
                 <p className="font-serif text-lg font-semibold text-white">
@@ -930,7 +778,7 @@ export default function HomePage() {
       <AboutSection />
       <ProgramsSection />
       <FacultySection />
-      <NewsEventsSection />
+      <NoticesSection />
       <ContactSection />
     </>
   );

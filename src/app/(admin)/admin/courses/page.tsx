@@ -257,13 +257,13 @@ export default function AdminCoursesPage() {
     <div>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <div className="flex gap-2 flex-wrap">
           {sessions.map((s) => (
             <button
               key={s}
               onClick={() => setActiveSession(s)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeSession === s
                   ? 'bg-oxford-blue text-white'
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
@@ -289,23 +289,23 @@ export default function AdminCoursesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Course Code</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Title</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Teacher</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Year/Sem</th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-600">Actions</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Course Code</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Title</th>
+                  <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600 hidden md:table-cell">Teacher</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600 hidden sm:table-cell">Year/Sem</th>
+                  <th className="text-center py-3 px-2 sm:px-4 font-medium text-gray-600">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCourses.map((course) => (
                   <tr key={course._id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-medium text-oxford-blue">{course.courseCode}</td>
-                    <td className="py-3 px-4">{course.courseTitle}</td>
-                    <td className="py-3 px-4">{course.teacherName}</td>
-                    <td className="py-3 px-4 text-center text-gray-500">
+                    <td className="py-3 px-2 sm:px-4 font-medium text-oxford-blue">{course.courseCode}</td>
+                    <td className="py-3 px-2 sm:px-4">{course.courseTitle}</td>
+                    <td className="py-3 px-2 sm:px-4 hidden md:table-cell">{course.teacherName}</td>
+                    <td className="py-3 px-2 sm:px-4 text-center text-gray-500 hidden sm:table-cell">
                       {course.year ? `Y${course.year}/S${course.semester}` : '—'}
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3 px-2 sm:px-4 text-center">
                       <Button
                         variant="danger"
                         size="sm"

@@ -5,15 +5,32 @@ import Button from '@/components/ui/Button';
 
 interface TopbarProps {
   title: string;
+  onToggleSidebar?: () => void;
+  sidebarOpen?: boolean;
 }
 
-export default function Topbar({ title }: TopbarProps) {
+export default function Topbar({ title, onToggleSidebar, sidebarOpen }: TopbarProps) {
   const { user, logout } = useAuth();
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-      <div className="lg:ml-0 ml-10">
-        <h1 className="text-xl font-semibold text-oxford-blue">{title}</h1>
+    <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        {onToggleSidebar && (
+          <button
+            onClick={onToggleSidebar}
+            className="lg:hidden p-2 -ml-2 text-oxford-blue rounded-lg hover:bg-gray-100 min-w-[40px] min-h-[40px] flex items-center justify-center"
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {sidebarOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        )}
+        <h1 className="text-lg sm:text-xl font-semibold text-oxford-blue">{title}</h1>
       </div>
       <div className="flex items-center gap-4">
         {user && (

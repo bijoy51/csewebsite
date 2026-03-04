@@ -134,13 +134,13 @@ export default function AdminStudentsPage() {
     <div>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <div className="flex gap-2 flex-wrap">
           {sessions.map((s) => (
             <button
               key={s}
               onClick={() => setActiveSession(s)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeSession === s
                   ? 'bg-oxford-blue text-white'
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
@@ -167,7 +167,7 @@ export default function AdminStudentsPage() {
               placeholder="Search by roll..."
               value={searchRoll}
               onChange={(e) => setSearchRoll(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue w-44"
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue w-full sm:w-44"
             />
             <Button
               variant="danger"
@@ -204,19 +204,19 @@ export default function AdminStudentsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Photo</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Name</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Roll</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Registration No</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Email</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Phone</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Blood Group</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Photo</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Name</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600">Roll</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600 hidden md:table-cell">Registration No</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600 hidden lg:table-cell">Email</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600 hidden lg:table-cell">Phone</th>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-gray-600 hidden xl:table-cell">Blood Group</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((student) => (
                     <tr key={student._id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-2 sm:px-4">
                         {student.profilePhoto && student.profilePhoto.startsWith('data:') ? (
                           <img
                             src={student.profilePhoto}
@@ -229,12 +229,12 @@ export default function AdminStudentsPage() {
                           </div>
                         )}
                       </td>
-                      <td className="py-3 px-4 font-medium text-oxford-blue">{student.name}</td>
-                      <td className="py-3 px-4">{student.roll}</td>
-                      <td className="py-3 px-4">{student.registrationNo}</td>
-                      <td className="py-3 px-4">{student.email}</td>
-                      <td className="py-3 px-4">{student.phone || '—'}</td>
-                      <td className="py-3 px-4">{student.bloodGroup || '—'}</td>
+                      <td className="py-3 px-2 sm:px-4 font-medium text-oxford-blue">{student.name}</td>
+                      <td className="py-3 px-2 sm:px-4">{student.roll}</td>
+                      <td className="py-3 px-2 sm:px-4 hidden md:table-cell">{student.registrationNo}</td>
+                      <td className="py-3 px-2 sm:px-4 hidden lg:table-cell">{student.email}</td>
+                      <td className="py-3 px-2 sm:px-4 hidden lg:table-cell">{student.phone || '—'}</td>
+                      <td className="py-3 px-2 sm:px-4 hidden xl:table-cell">{student.bloodGroup || '—'}</td>
                     </tr>
                   ))}
                 </tbody>

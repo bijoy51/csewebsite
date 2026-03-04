@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -13,6 +13,12 @@ interface Course {
   _id: string;
   courseCode: string;
   courseTitle: string;
+}
+
+interface Teacher {
+  _id: string;
+  name: string;
+  designation: string;
 }
 
 interface ScheduleEntry {
@@ -43,6 +49,11 @@ export default function CRSchedulePage() {
   const [teacherName, setTeacherName] = useState('');
   const [topic, setTopic] = useState('');
 
+  // Teacher autocomplete
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const teacherInputRef = useRef<HTMLDivElement>(null);
+
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -63,6 +74,43 @@ export default function CRSchedulePage() {
       setLoading(false);
     }
   }, [user, authLoading]);
+
+  // Fetch teachers for autocomplete
+  useEffect(() => {
+    fetch('/api/teachers')
+      .then((r) => r.json())
+      .then((data) => setTeachers(data.teachers || []))
+      .catch(console.error);
+  }, []);
+
+  // Close suggestions on click outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (teacherInputRef.current && !teacherInputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const sortedTeachers = useMemo(() => {
+    const rank = (d: string) => {
+      const l = d.toLowerCase();
+      if (l === 'professor') return 0;
+      if (l === 'associate professor') return 1;
+      if (l === 'assistant professor') return 2;
+      if (l === 'lecturer') return 3;
+      return 4;
+    };
+    return [...teachers].sort((a, b) => rank(a.designation) - rank(b.designation));
+  }, [teachers]);
+
+  const filteredTeachers = useMemo(() => {
+    if (!teacherName.trim()) return sortedTeachers;
+    const q = teacherName.toLowerCase();
+    return sortedTeachers.filter((t) => t.name.toLowerCase().includes(q));
+  }, [teacherName, sortedTeachers]);
 
   // Fetch all schedules for the session (all courses)
   const fetchSchedules = () => {
@@ -187,7 +235,7 @@ export default function CRSchedulePage() {
         <h3 className="text-sm font-semibold text-oxford-blue mb-3">
           {editingId ? 'Edit Schedule' : 'Add New Schedule'}
         </h3>
-        <div className="flex flex-wrap items-end gap-4">
+        <div className="space-y-4">
           <Select
             id="course"
             label="Course"
@@ -201,69 +249,92 @@ export default function CRSchedulePage() {
             }))}
             placeholder="Select course"
           />
-          <div>
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
-            />
-          </div>
-          <div>
-            <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-            <input
-              type="text"
-              id="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              placeholder="e.g. 10:00 AM"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
-            />
-          </div>
-          <div>
-            <label htmlFor="room" className="block text-sm font-medium text-gray-700 mb-1">Room</label>
-            <input
-              type="text"
-              id="room"
-              value={room}
-              onChange={(e) => setRoom(e.target.value)}
-              placeholder="e.g. Room 301"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
-            />
-          </div>
-          <div>
-            <label htmlFor="teacherName" className="block text-sm font-medium text-gray-700 mb-1">Teacher Name</label>
-            <input
-              type="text"
-              id="teacherName"
-              value={teacherName}
-              onChange={(e) => setTeacherName(e.target.value)}
-              placeholder="Teacher name"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
-            />
-          </div>
-          <div>
-            <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
-            <input
-              type="text"
-              id="topic"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              placeholder="Class topic"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={handleSubmit} loading={submitting}>
-              {editingId ? 'Update' : 'Add Schedule'}
-            </Button>
-            {editingId && (
-              <Button variant="secondary" onClick={resetForm}>
-                Cancel
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="w-full sm:w-auto">
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input
+                type="date"
+                id="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              />
+            </div>
+            <div className="w-full sm:w-auto">
+              <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+              <input
+                type="time"
+                id="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              />
+            </div>
+            <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[120px]">
+              <label htmlFor="room" className="block text-sm font-medium text-gray-700 mb-1">Room</label>
+              <input
+                type="text"
+                id="room"
+                value={room}
+                onChange={(e) => setRoom(e.target.value)}
+                placeholder="e.g. Room 301"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              />
+            </div>
+            <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[140px] relative" ref={teacherInputRef}>
+              <label htmlFor="teacherName" className="block text-sm font-medium text-gray-700 mb-1">Teacher Name</label>
+              <input
+                type="text"
+                id="teacherName"
+                value={teacherName}
+                onChange={(e) => {
+                  setTeacherName(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                placeholder="Teacher name"
+                autoComplete="off"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              />
+              {showSuggestions && filteredTeachers.length > 0 && (
+                <ul className="absolute z-20 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                  {filteredTeachers.map((t) => (
+                    <li
+                      key={t._id}
+                      onClick={() => {
+                        setTeacherName(t.name);
+                        setShowSuggestions(false);
+                      }}
+                      className="px-3 py-2 text-sm cursor-pointer hover:bg-oxford-cream transition-colors"
+                    >
+                      <span className="font-medium">{t.name}</span>
+                      <span className="text-gray-400 ml-2 text-xs">{t.designation}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="w-full sm:w-auto sm:flex-1 sm:min-w-[140px]">
+              <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
+              <input
+                type="text"
+                id="topic"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="Class topic"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-oxford-blue"
+              />
+            </div>
+            <div className="w-full sm:w-auto flex gap-2">
+              <Button onClick={handleSubmit} loading={submitting}>
+                {editingId ? 'Update' : 'Add Schedule'}
               </Button>
-            )}
+              {editingId && (
+                <Button variant="secondary" onClick={resetForm}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </Card>
@@ -294,36 +365,36 @@ export default function CRSchedulePage() {
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm min-w-[600px]">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Course Code</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Time</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Room</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Teacher</th>
-                      <th className="text-left py-2 px-4 font-medium text-gray-600">Topic</th>
-                      <th className="text-center py-2 px-4 font-medium text-gray-600">Actions</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Course Code</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Time</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Room</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Teacher</th>
+                      <th className="text-left py-2 px-3 font-medium text-gray-600">Topic</th>
+                      <th className="text-center py-2 px-3 font-medium text-gray-600">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {entries.map((entry) => (
                       <tr key={entry._id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                        <td className="py-2.5 px-4 font-medium text-oxford-blue">{entry.courseCode}</td>
-                        <td className="py-2.5 px-4">{entry.time}</td>
-                        <td className="py-2.5 px-4">{entry.room || '—'}</td>
-                        <td className="py-2.5 px-4">{entry.teacherName || '—'}</td>
-                        <td className="py-2.5 px-4">{entry.topic || '—'}</td>
-                        <td className="py-2.5 px-4 text-center">
+                        <td className="py-2.5 px-3 font-medium text-oxford-blue whitespace-nowrap">{entry.courseCode}</td>
+                        <td className="py-2.5 px-3 whitespace-nowrap">{entry.time}</td>
+                        <td className="py-2.5 px-3">{entry.room || '—'}</td>
+                        <td className="py-2.5 px-3">{entry.teacherName || '—'}</td>
+                        <td className="py-2.5 px-3">{entry.topic || '—'}</td>
+                        <td className="py-2.5 px-3 text-center">
                           <div className="flex justify-center gap-2">
                             <button
                               onClick={() => handleEdit(entry)}
-                              className="text-oxford-blue hover:text-blue-700 text-xs font-medium"
+                              className="text-oxford-blue hover:text-blue-700 text-xs font-medium px-2 py-1"
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => handleDelete(entry._id)}
-                              className="text-red-500 hover:text-red-700 text-xs font-medium"
+                              className="text-red-500 hover:text-red-700 text-xs font-medium px-2 py-1"
                             >
                               Delete
                             </button>

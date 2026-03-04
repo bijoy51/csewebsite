@@ -18,7 +18,16 @@
       "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE tutorials SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
       "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE tutorial_results SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
       "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE semester_results SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
-      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE class_schedules SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")"
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"UPDATE class_schedules SET course_code = REPLACE\\(course_code, ''%20'', '' ''\\);\")",
+      "Bash(npx wrangler deploy .open-next/worker.js --assets .open-next/assets --name cse-website)",
+      "Bash(npx wrangler d1 execute cse-department --remote --command=\"ALTER TABLE class_schedules ADD COLUMN topic TEXT DEFAULT '''';\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command=\"SELECT ''courses'' as tbl, COUNT\\(*\\) as cnt FROM courses UNION ALL SELECT ''students'', COUNT\\(*\\) FROM students UNION ALL SELECT ''crs'', COUNT\\(*\\) FROM crs UNION ALL SELECT ''sessions'', COUNT\\(*\\) FROM sessions;\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --file=seed-teachers.sql)",
+      "Bash(git add middleware.ts src/app src/components src/context src/lib src/types public/images/campus.jfif)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)",
+      "Bash(ls -la \"c:\\\\Users\\\\HP\\\\Desktop\\\\cseWebsite\\\\src\\\\app\\\\\\(admin\\)\\\\admin\"\")",
+      "Bash(npx wrangler d1 execute cse-department --remote --command \"CREATE TABLE IF NOT EXISTS notices \\(id TEXT PRIMARY KEY DEFAULT \\(hex\\(randomblob\\(12\\)\\)\\), type TEXT NOT NULL CHECK\\(type IN \\(''image'', ''text'', ''card''\\)\\), title TEXT NOT NULL, content TEXT DEFAULT '''', image_url TEXT DEFAULT '''', category TEXT DEFAULT '''', date TEXT DEFAULT \\(date\\(''now''\\)\\), created_at TEXT DEFAULT \\(datetime\\(''now''\\)\\), updated_at TEXT DEFAULT \\(datetime\\(''now''\\)\\)\\)\")"
     ]
   }
 }
